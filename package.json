@@ -3,7 +3,7 @@
 	"icon": "logo.png",
 	"displayName": "∫TeX - Modern LaTeX Editor",
 	"description": "∫TeX is a modern, local-first LaTeX extension for VS Code, offering fast builds, integrated PDF preview, SyncTeX, and smart tooling powered by texlab LSP server.",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"publisher": "PolarHuskyDev",
 	"license": "MIT",
 	"repository": {
@@ -402,6 +402,7 @@
 		"@vscode/test-electron": "^2.3.8",
 		"@vscode/vsce": "^3.7.1",
 		"eslint": "^8.56.0",
+		"ovsx": "^0.10.8",
 		"ts-loader": "^9.5.1",
 		"typescript": "^5.3.3",
 		"webpack": "^5.89.0",
