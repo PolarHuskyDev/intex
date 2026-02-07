@@ -1,32 +1,53 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class Logger {
-    constructor(private outputChannel: vscode.OutputChannel) {}
+	private static _instance: Logger | null = null;
+	private static outputChannel: vscode.OutputChannel | null = null;
 
-    info(message: string): void {
-        const timestamp = new Date().toISOString();
-        this.outputChannel.appendLine(`[${timestamp}] [INFO] ${message}`);
-    }
+	private constructor() {}
 
-    warn(message: string): void {
-        const timestamp = new Date().toISOString();
-        this.outputChannel.appendLine(`[${timestamp}] [WARN] ${message}`);
-    }
+	public static get instance(): Logger {
+		if (!Logger._instance) {
+			Logger._instance = new Logger();
+		}
+		return Logger._instance;
+	}
 
-    error(message: string): void {
-        const timestamp = new Date().toISOString();
-        this.outputChannel.appendLine(`[${timestamp}] [ERROR] ${message}`);
-    }
+	public static initialize(outputChannel?: vscode.OutputChannel) {
+		if (outputChannel) {
+			Logger.outputChannel = outputChannel;
+		} else if (!Logger.outputChannel) {
+			Logger.outputChannel = vscode.window.createOutputChannel("InTeX");
+		}
+	}
 
-    show(): void {
-        this.outputChannel.show();
-    }
+	public get channel(): vscode.OutputChannel {
+		if (!Logger.outputChannel) {
+			Logger.outputChannel = vscode.window.createOutputChannel("InTeX");
+		}
+		return Logger.outputChannel;
+	}
 
-    hide(): void {
-        this.outputChannel.hide();
-    }
+	info(message: string): void {
+		const timestamp = new Date().toISOString();
+		this.channel.appendLine(`[${timestamp}] [INFO] ${message}`);
+	}
 
-    getOutputChannel(): vscode.OutputChannel {
-        return this.outputChannel;
-    }
+	warn(message: string): void {
+		const timestamp = new Date().toISOString();
+		this.channel.appendLine(`[${timestamp}] [WARN] ${message}`);
+	}
+
+	error(message: string): void {
+		const timestamp = new Date().toISOString();
+		this.channel.appendLine(`[${timestamp}] [ERROR] ${message}`);
+	}
+
+	show(): void {
+		this.channel.show();
+	}
+
+	hide(): void {
+		this.channel.hide();
+	}
 }

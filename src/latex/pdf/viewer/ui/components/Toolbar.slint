@@ -1,0 +1,172 @@
+import { Button, HorizontalBox } from "std-widgets.slint";
+import { Theme } from "../Theme.slint";
+
+export component ImageButton inherits Rectangle {
+	in-out property <string> tooltipText;
+	in-out property <image> icon;
+	in property <bool> enabled;
+
+	callback clicked();
+
+	background: transparent;
+
+	touchArea := TouchArea {
+		clicked => {
+			root.clicked();
+		}
+	}
+
+	Image {
+		source: root.icon;
+		vertical-alignment: center;
+		horizontal-alignment: center;
+		width: parent.width;
+		height: parent.height;
+
+		colorize: !enabled ? Theme.button-disabled-background : 
+		(touchArea.pressed ? Theme.button-hover-background : Theme.button-background);
+		//  !enabled ? Theme.button-disabled-text-color : Theme.text-color;
+	}
+
+	// Tooltip
+	Rectangle {
+		x: touchArea.mouse-x;
+		y: touchArea.mouse-y + 10px;
+		z: 100;
+
+		Text {
+			text: root.tooltipText;
+		}
+		visible: touchArea.has-hover;
+	}
+}
+
+
+export component Toolbar inherits Rectangle {
+	background: Theme.window-background.darker(1.33);
+	height: 40px;
+
+	in-out property <int> currentPage;
+	in property <int> pages;
+	in-out property <float> zoom;
+
+	HorizontalBox {
+		height: parent.height;
+		spacing: 10px;
+		padding: 6px;
+		alignment: LayoutAlignment.center;
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Previous Page";
+			icon: @image-url("../assets/previous.svg");
+			enabled: currentPage > 1;
+
+			clicked => {
+
+			}
+		}
+
+		page := TextInput {
+			text: currentPage;
+			read-only: false;
+			input-type: number;
+
+			vertical-alignment: center;
+		}
+
+		Text {
+			text: "of " + pages;
+			vertical-alignment: center;
+		}
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Next Page";
+			icon: @image-url("../assets/next.svg");
+			enabled: currentPage < pages;
+
+			clicked => {
+				// Handle next page action
+			}
+		}
+
+		// Separator
+		Rectangle {
+			width: 1px;
+			height: 30px;
+			background: Theme.text-color.darker(1.5);
+			y: (parent.height - self.height) / 2;
+		}
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Zoom Out";
+			icon: @image-url("../assets/zoom-out.svg");
+			enabled: zoom > 0.1;
+			clicked => {
+				// Handle zoom out action
+			}
+		}
+
+		zoomLvl := Text {
+			text: (root.zoom * 100).to-precision(0) + "%";
+			vertical-alignment: center;
+			width: 50px;
+			horizontal-alignment: center;
+		}
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Zoom In";
+			icon: @image-url("../assets/zoom-in.svg");
+			enabled: zoom < 3.0;
+
+			clicked => {
+				// Handle zoom in action
+			}
+		}
+
+		// Separator
+		Rectangle {
+			width: 1px;
+			height: 30px;
+			background: Theme.text-color.darker(1.5);
+			y: (parent.height - self.height) / 2;
+		}
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Fit to Width";
+			icon: @image-url("../assets/zoom-fit-width.svg");
+			enabled: true;
+
+			clicked => {
+				// Handle reset zoom action
+			}
+		}
+
+		ImageButton {
+			height: parent.height - 12px;
+			width: self.height;
+
+			tooltipText: "Fit to Page";
+			icon: @image-url("../assets/zoom-fit-page.svg");
+			enabled: true;
+
+			clicked => {
+				// Handle reset zoom action
+			}
+		}
+	}
+}

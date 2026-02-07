@@ -29,8 +29,6 @@
 		"academic"
 	],
 	"activationEvents": [
-		"onLanguage:latex",
-		"onLanguage:tex",
 		"workspaceContains:**/*.tex"
 	],
 	"main": "./dist/extension.js",
@@ -68,190 +66,8 @@
 				"path": "./snippets/latex.json"
 			}
 		],
-		"commands": [
-			{
-				"command": "intex.build",
-				"title": "InTeX: Build LaTeX Document",
-				"icon": "$(tools)"
-			},
-			{
-				"command": "intex.clean",
-				"title": "InTeX: Clean Auxiliary Files",
-				"icon": "$(trash)"
-			},
-			{
-				"command": "intex.cleanBuild",
-				"title": "InTeX: Clean and Build",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "intex.viewPdf",
-				"title": "InTeX: View PDF",
-				"icon": "$(file-pdf)"
-			},
-			{
-				"command": "intex.selectBuilder",
-				"title": "InTeX: Select Build Method (Local/Docker)",
-				"icon": "$(settings-gear)"
-			},
-			{
-				"command": "intex.detectEnvironment",
-				"title": "InTeX: Detect LaTeX Environment"
-			},
-			{
-				"command": "intex.installTexlab",
-				"title": "InTeX: Install/Update texlab LSP Server"
-			},
-			{
-				"command": "intex.synctex.forwardSearch",
-				"title": "InTeX: Forward Search (Go to PDF)",
-				"icon": "$(arrow-right)"
-			},
-			{
-				"command": "intex.newFromTemplate",
-				"title": "InTeX: New Project from Template",
-				"icon": "$(new-file)"
-			},
-			{
-				"command": "intex.insertCitation",
-				"title": "InTeX: Insert Citation",
-				"icon": "$(references)"
-			},
-			{
-				"command": "intex.editBibtexEntry",
-				"title": "InTeX: Edit BibTeX Entry",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "intex.findRootFile",
-				"title": "InTeX: Find Root File"
-			},
-			{
-				"command": "intex.analyzeProject",
-				"title": "InTeX: Analyze Project Structure"
-			},
-			{
-				"command": "intex.insertFigure",
-				"title": "InTeX: Insert Figure",
-				"icon": "$(file-media)"
-			},
-			{
-				"command": "intex.previewFigure",
-				"title": "InTeX: Preview Figure at Cursor"
-			},
-			{
-				"command": "intex.showAllFigures",
-				"title": "InTeX: Show All Figures"
-			},
-			{
-				"command": "intex.toggleInlinePreviews",
-				"title": "InTeX: Toggle Inline Figure Previews"
-			},
-			{
-				"command": "intex.previewTikz",
-				"title": "InTeX: Preview TikZ Code",
-				"icon": "$(preview)"
-			},
-			{
-				"command": "intex.compileTikzStandalone",
-				"title": "InTeX: Compile TikZ as Standalone"
-			},
-			{
-				"command": "intex.insertTikzTemplate",
-				"title": "InTeX: Insert TikZ Template"
-			},
-			{
-				"command": "intex.generatePlot",
-				"title": "InTeX: Generate Plot with Wizard"
-			},
-			{
-				"command": "intex.insertPgfplotsTemplate",
-				"title": "InTeX: Insert Pgfplots Template"
-			},
-			{
-				"command": "intex.openEquationEditor",
-				"title": "InTeX: Open Equation Editor",
-				"icon": "$(symbol-operator)"
-			},
-			{
-				"command": "intex.insertMathSymbol",
-				"title": "InTeX: Insert Math Symbol"
-			},
-			{
-				"command": "intex.wrapInMath",
-				"title": "InTeX: Wrap Selection in Math Mode"
-			},
-			{
-				"command": "intex.openTableEditor",
-				"title": "InTeX: Open Table Editor",
-				"icon": "$(table)"
-			},
-			{
-				"command": "intex.editTableAtCursor",
-				"title": "InTeX: Edit Table at Cursor"
-			},
-			{
-				"command": "intex.insertTableTemplate",
-				"title": "InTeX: Insert Table Template"
-			},
-			{
-				"command": "intex.createMacro",
-				"title": "InTeX: Create Macro",
-				"icon": "$(symbol-snippet)"
-			},
-			{
-				"command": "intex.insertCommonMacros",
-				"title": "InTeX: Insert Common Macros"
-			},
-			{
-				"command": "intex.extractMacro",
-				"title": "InTeX: Extract Selection to Macro"
-			},
-			{
-				"command": "intex.clearBuildCache",
-				"title": "InTeX: Clear Build Cache"
-			},
-			{
-				"command": "intex.showCacheStats",
-				"title": "InTeX: Show Cache Statistics"
-			},
-			{
-				"command": "intex.toggleIncrementalBuild",
-				"title": "InTeX: Toggle Incremental Build"
-			},
-			{
-				"command": "intex.toggleInlineDecorations",
-				"title": "InTeX: Toggle Inline Previews"
-			}
-		],
-		"menus": {
-			"editor/title": [
-				{
-					"when": "resourceLangId == latex",
-					"command": "intex.build",
-					"group": "navigation@1"
-				},
-				{
-					"when": "resourceLangId == latex",
-					"command": "intex.viewPdf",
-					"group": "navigation@2"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "intex.build",
-					"when": "resourceLangId == latex"
-				},
-				{
-					"command": "intex.clean",
-					"when": "resourceLangId == latex"
-				},
-				{
-					"command": "intex.viewPdf",
-					"when": "resourceLangId == latex"
-				}
-			]
-		},
+		"commands": [],
+		"menus": {},
 		"configuration": {
 			"title": "InTeX",
 			"properties": {
@@ -363,8 +179,8 @@
 		},
 		"customEditors": [
 			{
-				"viewType": "intex.pdfPreview",
-				"displayName": "InTeX PDF Preview",
+				"viewType": "intex.pdfViewer",
+				"displayName": "InTeX PDF Viewer",
 				"selector": [
 					{
 						"filenamePattern": "*.pdf"
@@ -373,36 +189,34 @@
 				"priority": "option"
 			}
 		],
-		"keybindings": [
-			{
-				"command": "intex.synctex.forwardSearch",
-				"key": "ctrl+alt+j",
-				"mac": "cmd+alt+j",
-				"when": "editorTextFocus && editorLangId == latex"
-			}
-		]
+		"keybindings": []
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
-		"compile": "webpack",
+		"precompile": "bash ./scripts/prebuild.sh",
+		"compile": "npm run precompile && webpack",
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"compile-tests": "tsc -p . --outDir out",
 		"watch-tests": "tsc -p . -w --outDir out",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/runTest.js",
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@types/adm-zip": "^0.5.7",
+		"@types/mathjax": "^0.0.40",
 		"@types/node": "^20.19.30",
 		"@types/vscode": "^1.85.0",
-		"@typescript-eslint/eslint-plugin": "^6.15.0",
-		"@typescript-eslint/parser": "^6.15.0",
+		"@typescript-eslint/eslint-plugin": "^8.54.0",
+		"@typescript-eslint/parser": "^8.54.0",
 		"@vscode/test-electron": "^2.3.8",
 		"@vscode/vsce": "^3.7.1",
-		"eslint": "^8.56.0",
+		"copy-webpack-plugin": "^13.0.1",
+		"eslint": "^9.39.2",
 		"ovsx": "^0.10.8",
+		"prettier": "^3.8.1",
 		"ts-loader": "^9.5.1",
 		"typescript": "^5.3.3",
 		"webpack": "^5.89.0",
@@ -412,6 +226,8 @@
 		"adm-zip": "^0.5.16",
 		"html2canvas": "^1.4.1",
 		"jimp": "^1.6.0",
+		"mathjax": "^4.1.0",
+		"sharp": "^0.34.5",
 		"vscode-languageclient": "^9.0.1"
 	}
 }

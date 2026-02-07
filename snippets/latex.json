@@ -1,270 +1,226 @@
 {
-  "Begin Environment": {
-    "prefix": "beg",
-    "body": [
-      "\\begin{${1:environment}}",
-      "\t$0",
-      "\\end{$1}"
-    ],
-    "description": "Begin/end environment"
-  },
-  "Document Class": {
-    "prefix": "doc",
-    "body": [
-      "\\documentclass{${1|article,report,book,beamer|}}",
-      "\\usepackage[utf8]{inputenc}",
-      "",
-      "\\title{${2:Title}}",
-      "\\author{${3:Author}}",
-      "\\date{${4:\\today}}",
-      "",
-      "\\begin{document}",
-      "",
-      "\\maketitle",
-      "",
-      "$0",
-      "",
-      "\\end{document}"
-    ],
-    "description": "Complete document template"
-  },
-  "Section": {
-    "prefix": "sec",
-    "body": "\\section{$1}",
-    "description": "Section"
-  },
-  "Subsection": {
-    "prefix": "ssec",
-    "body": "\\subsection{$1}",
-    "description": "Subsection"
-  },
-  "Subsubsection": {
-    "prefix": "sssec",
-    "body": "\\subsubsection{$1}",
-    "description": "Subsubsection"
-  },
-  "Itemize": {
-    "prefix": "item",
-    "body": [
-      "\\begin{itemize}",
-      "\t\\item $0",
-      "\\end{itemize}"
-    ],
-    "description": "Itemize environment"
-  },
-  "Enumerate": {
-    "prefix": "enum",
-    "body": [
-      "\\begin{enumerate}",
-      "\t\\item $0",
-      "\\end{enumerate}"
-    ],
-    "description": "Enumerate environment"
-  },
-  "Figure": {
-    "prefix": "fig",
-    "body": [
-      "\\begin{figure}[${1:htbp}]",
-      "\t\\centering",
-      "\t\\includegraphics[width=${2:0.8}\\textwidth]{${3:image}}",
-      "\t\\caption{${4:Caption}}",
-      "\t\\label{fig:${5:label}}",
-      "\\end{figure}"
-    ],
-    "description": "Figure environment"
-  },
-  "Table": {
-    "prefix": "tab",
-    "body": [
-      "\\begin{table}[${1:htbp}]",
-      "\t\\centering",
-      "\t\\begin{tabular}{${2:c|c}}",
-      "\t\t\\hline",
-      "\t\t${3:Column 1} & ${4:Column 2} \\\\",
-      "\t\t\\hline",
-      "\t\t$0 & \\\\",
-      "\t\t\\hline",
-      "\t\\end{tabular}",
-      "\t\\caption{${5:Caption}}",
-      "\t\\label{tab:${6:label}}",
-      "\\end{table}"
-    ],
-    "description": "Table environment"
-  },
-  "Equation": {
-    "prefix": "eq",
-    "body": [
-      "\\begin{equation}",
-      "\t$0",
-      "\t\\label{eq:${1:label}}",
-      "\\end{equation}"
-    ],
-    "description": "Equation environment"
-  },
-  "Align": {
-    "prefix": "ali",
-    "body": [
-      "\\begin{align}",
-      "\t$0",
-      "\\end{align}"
-    ],
-    "description": "Align environment"
-  },
-  "Inline Math": {
-    "prefix": "mk",
-    "body": "$$1$$0",
-    "description": "Inline math"
-  },
-  "Display Math": {
-    "prefix": "dm",
-    "body": [
-      "\\[",
-      "\t$0",
-      "\\]"
-    ],
-    "description": "Display math"
-  },
-  "Fraction": {
-    "prefix": "frac",
-    "body": "\\frac{${1:numerator}}{${2:denominator}}$0",
-    "description": "Fraction"
-  },
-  "Square Root": {
-    "prefix": "sqrt",
-    "body": "\\sqrt{$1}$0",
-    "description": "Square root"
-  },
-  "Sum": {
-    "prefix": "sum",
-    "body": "\\sum_{${1:i=1}}^{${2:n}} $0",
-    "description": "Summation"
-  },
-  "Integral": {
-    "prefix": "int",
-    "body": "\\int_{${1:a}}^{${2:b}} ${3:f(x)} \\, d${4:x}$0",
-    "description": "Integral"
-  },
-  "Limit": {
-    "prefix": "lim",
-    "body": "\\lim_{${1:n} \\to ${2:\\infty}} $0",
-    "description": "Limit"
-  },
-  "Bold": {
-    "prefix": "bf",
-    "body": "\\textbf{$1}$0",
-    "description": "Bold text"
-  },
-  "Italic": {
-    "prefix": "it",
-    "body": "\\textit{$1}$0",
-    "description": "Italic text"
-  },
-  "Typewriter": {
-    "prefix": "tt",
-    "body": "\\texttt{$1}$0",
-    "description": "Typewriter text"
-  },
-  "Underline": {
-    "prefix": "ul",
-    "body": "\\underline{$1}$0",
-    "description": "Underline text"
-  },
-  "Emph": {
-    "prefix": "emp",
-    "body": "\\emph{$1}$0",
-    "description": "Emphasize text"
-  },
-  "Quote": {
-    "prefix": "quote",
-    "body": [
-      "\\begin{quote}",
-      "\t$0",
-      "\\end{quote}"
-    ],
-    "description": "Quote environment"
-  },
-  "Verbatim": {
-    "prefix": "verb",
-    "body": [
-      "\\begin{verbatim}",
-      "\t$0",
-      "\\end{verbatim}"
-    ],
-    "description": "Verbatim environment"
-  },
-  "Label": {
-    "prefix": "lab",
-    "body": "\\label{${1:label}}$0",
-    "description": "Label"
-  },
-  "Reference": {
-    "prefix": "ref",
-    "body": "\\ref{${1:label}}$0",
-    "description": "Reference"
-  },
-  "Cite": {
-    "prefix": "cite",
-    "body": "\\cite{${1:key}}$0",
-    "description": "Citation"
-  },
-  "Footnote": {
-    "prefix": "fn",
-    "body": "\\footnote{$1}$0",
-    "description": "Footnote"
-  },
-  "Chapter": {
-    "prefix": "cha",
-    "body": "\\chapter{$1}",
-    "description": "Chapter"
-  },
-  "Part": {
-    "prefix": "part",
-    "body": "\\part{$1}",
-    "description": "Part"
-  },
-  "Abstract": {
-    "prefix": "abs",
-    "body": [
-      "\\begin{abstract}",
-      "\t$0",
-      "\\end{abstract}"
-    ],
-    "description": "Abstract environment"
-  },
-  "Frame (Beamer)": {
-    "prefix": "frame",
-    "body": [
-      "\\begin{frame}{${1:Title}}",
-      "\t$0",
-      "\\end{frame}"
-    ],
-    "description": "Beamer frame"
-  },
-  "Block (Beamer)": {
-    "prefix": "block",
-    "body": [
-      "\\begin{block}{${1:Title}}",
-      "\t$0",
-      "\\end{block}"
-    ],
-    "description": "Beamer block"
-  },
-  "Matrix": {
-    "prefix": "mat",
-    "body": [
-      "\\begin{${1|matrix,pmatrix,bmatrix,vmatrix,Vmatrix|}}",
-      "\t$0",
-      "\\end{$1}"
-    ],
-    "description": "Matrix environment"
-  },
-  "Cases": {
-    "prefix": "cases",
-    "body": [
-      "\\begin{cases}",
-      "\t$0",
-      "\\end{cases}"
-    ],
-    "description": "Cases environment"
-  }
+	"Begin Environment": {
+		"prefix": "beg",
+		"body": ["\\begin{${1:environment}}", "\t$0", "\\end{$1}"],
+		"description": "Begin/end environment"
+	},
+	"Document Class": {
+		"prefix": "doc",
+		"body": [
+			"\\documentclass{${1|article,report,book,beamer|}}",
+			"\\usepackage[utf8]{inputenc}",
+			"",
+			"\\title{${2:Title}}",
+			"\\author{${3:Author}}",
+			"\\date{${4:\\today}}",
+			"",
+			"\\begin{document}",
+			"",
+			"\\maketitle",
+			"",
+			"$0",
+			"",
+			"\\end{document}"
+		],
+		"description": "Complete document template"
+	},
+	"Section": {
+		"prefix": "sec",
+		"body": "\\section{$1}",
+		"description": "Section"
+	},
+	"Subsection": {
+		"prefix": "ssec",
+		"body": "\\subsection{$1}",
+		"description": "Subsection"
+	},
+	"Subsubsection": {
+		"prefix": "sssec",
+		"body": "\\subsubsection{$1}",
+		"description": "Subsubsection"
+	},
+	"Itemize": {
+		"prefix": "item",
+		"body": ["\\begin{itemize}", "\t\\item $0", "\\end{itemize}"],
+		"description": "Itemize environment"
+	},
+	"Enumerate": {
+		"prefix": "enum",
+		"body": ["\\begin{enumerate}", "\t\\item $0", "\\end{enumerate}"],
+		"description": "Enumerate environment"
+	},
+	"Figure": {
+		"prefix": "fig",
+		"body": [
+			"\\begin{figure}[${1:htbp}]",
+			"\t\\centering",
+			"\t\\includegraphics[width=${2:0.8}\\textwidth]{${3:image}}",
+			"\t\\caption{${4:Caption}}",
+			"\t\\label{fig:${5:label}}",
+			"\\end{figure}"
+		],
+		"description": "Figure environment"
+	},
+	"Table": {
+		"prefix": "tab",
+		"body": [
+			"\\begin{table}[${1:htbp}]",
+			"\t\\centering",
+			"\t\\begin{tabular}{${2:c|c}}",
+			"\t\t\\hline",
+			"\t\t${3:Column 1} & ${4:Column 2} \\\\",
+			"\t\t\\hline",
+			"\t\t$0 & \\\\",
+			"\t\t\\hline",
+			"\t\\end{tabular}",
+			"\t\\caption{${5:Caption}}",
+			"\t\\label{tab:${6:label}}",
+			"\\end{table}"
+		],
+		"description": "Table environment"
+	},
+	"Equation": {
+		"prefix": "eq",
+		"body": [
+			"\\begin{equation}",
+			"\t$0",
+			"\t\\label{eq:${1:label}}",
+			"\\end{equation}"
+		],
+		"description": "Equation environment"
+	},
+	"Align": {
+		"prefix": "ali",
+		"body": ["\\begin{align}", "\t$0", "\\end{align}"],
+		"description": "Align environment"
+	},
+	"Inline Math": {
+		"prefix": "mk",
+		"body": "$$1$$0",
+		"description": "Inline math"
+	},
+	"Display Math": {
+		"prefix": "dm",
+		"body": ["\\[", "\t$0", "\\]"],
+		"description": "Display math"
+	},
+	"Fraction": {
+		"prefix": "frac",
+		"body": "\\frac{${1:numerator}}{${2:denominator}}$0",
+		"description": "Fraction"
+	},
+	"Square Root": {
+		"prefix": "sqrt",
+		"body": "\\sqrt{$1}$0",
+		"description": "Square root"
+	},
+	"Sum": {
+		"prefix": "sum",
+		"body": "\\sum_{${1:i=1}}^{${2:n}} $0",
+		"description": "Summation"
+	},
+	"Integral": {
+		"prefix": "int",
+		"body": "\\int_{${1:a}}^{${2:b}} ${3:f(x)} \\, d${4:x}$0",
+		"description": "Integral"
+	},
+	"Limit": {
+		"prefix": "lim",
+		"body": "\\lim_{${1:n} \\to ${2:\\infty}} $0",
+		"description": "Limit"
+	},
+	"Bold": {
+		"prefix": "bf",
+		"body": "\\textbf{$1}$0",
+		"description": "Bold text"
+	},
+	"Italic": {
+		"prefix": "it",
+		"body": "\\textit{$1}$0",
+		"description": "Italic text"
+	},
+	"Typewriter": {
+		"prefix": "tt",
+		"body": "\\texttt{$1}$0",
+		"description": "Typewriter text"
+	},
+	"Underline": {
+		"prefix": "ul",
+		"body": "\\underline{$1}$0",
+		"description": "Underline text"
+	},
+	"Emph": {
+		"prefix": "emp",
+		"body": "\\emph{$1}$0",
+		"description": "Emphasize text"
+	},
+	"Quote": {
+		"prefix": "quote",
+		"body": ["\\begin{quote}", "\t$0", "\\end{quote}"],
+		"description": "Quote environment"
+	},
+	"Verbatim": {
+		"prefix": "verb",
+		"body": ["\\begin{verbatim}", "\t$0", "\\end{verbatim}"],
+		"description": "Verbatim environment"
+	},
+	"Label": {
+		"prefix": "lab",
+		"body": "\\label{${1:label}}$0",
+		"description": "Label"
+	},
+	"Reference": {
+		"prefix": "ref",
+		"body": "\\ref{${1:label}}$0",
+		"description": "Reference"
+	},
+	"Cite": {
+		"prefix": "cite",
+		"body": "\\cite{${1:key}}$0",
+		"description": "Citation"
+	},
+	"Footnote": {
+		"prefix": "fn",
+		"body": "\\footnote{$1}$0",
+		"description": "Footnote"
+	},
+	"Chapter": {
+		"prefix": "cha",
+		"body": "\\chapter{$1}",
+		"description": "Chapter"
+	},
+	"Part": {
+		"prefix": "part",
+		"body": "\\part{$1}",
+		"description": "Part"
+	},
+	"Abstract": {
+		"prefix": "abs",
+		"body": ["\\begin{abstract}", "\t$0", "\\end{abstract}"],
+		"description": "Abstract environment"
+	},
+	"Frame (Beamer)": {
+		"prefix": "frame",
+		"body": ["\\begin{frame}{${1:Title}}", "\t$0", "\\end{frame}"],
+		"description": "Beamer frame"
+	},
+	"Block (Beamer)": {
+		"prefix": "block",
+		"body": ["\\begin{block}{${1:Title}}", "\t$0", "\\end{block}"],
+		"description": "Beamer block"
+	},
+	"Matrix": {
+		"prefix": "mat",
+		"body": [
+			"\\begin{${1|matrix,pmatrix,bmatrix,vmatrix,Vmatrix|}}",
+			"\t$0",
+			"\\end{$1}"
+		],
+		"description": "Matrix environment"
+	},
+	"Cases": {
+		"prefix": "cases",
+		"body": ["\\begin{cases}", "\t$0", "\\end{cases}"],
+		"description": "Cases environment"
+	}
 }
