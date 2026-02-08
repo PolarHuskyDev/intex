@@ -47,7 +47,6 @@
 	const MAX_ZOOM  = 5.0;
 	const THUMB_WIDTH  = 134;
 	const THUMB_SCALE  = 0.4;
-	const PAGE_GAP     = 12; // px between pages
 
 	// Per-page data
 	const pageWrappers = [];   // DOM wrapper elements (one per page)
@@ -506,11 +505,6 @@
 		const content = document.getElementById("content");
 		content.classList.toggle("sidebar-collapsed");
 		sidebarToggle.classList.toggle("active");
-		if (fitMode) {
-			setTimeout(() => {
-				reRenderAll();
-			}, 200);
-		}
 	}
 
 	function updateFitButtons() {

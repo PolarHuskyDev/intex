@@ -120,6 +120,7 @@ html, body {
 	font-size: 13px;
 	outline: none;
 	-moz-appearance: textfield;
+	appearance: textfield;
 }
 #pageInput::-webkit-outer-spin-button,
 #pageInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

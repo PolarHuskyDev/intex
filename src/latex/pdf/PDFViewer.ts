@@ -127,7 +127,7 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 
 			<div class="tb-sep"></div>
 
-			<button class="tb-btn" id="fitWidthBtn" title="Fit to Width">
+			<button class="tb-btn active" id="fitWidthBtn" title="Fit to Width">
 				<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><polyline points="8 12 6 10 6 14 8 12"/><polyline points="16 12 18 10 18 14 16 12"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 			</button>
 
