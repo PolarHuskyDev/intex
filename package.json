@@ -66,7 +66,29 @@
 				"path": "./snippets/latex.json"
 			}
 		],
-		"commands": [],
+		"commands": [
+			{
+				"command": "intex.build",
+				"title": "Build",
+				"description": "Build the active LaTeX document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.clean",
+				"title": "Clean",
+				"description": "Clean auxiliary files from the active LaTeX document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.openPdf",
+				"title": "Open PDF",
+				"description": "Open the PDF viewer for the built document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			}
+		],
 		"menus": {},
 		"configuration": {
 			"title": "InTeX",
@@ -86,6 +108,11 @@
 					"default": "texlive/texlive:latest",
 					"description": "Docker image to use for containerized builds"
 				},
+				"intex.docker.userShift": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable user ID shifting for Docker builds on Linux to avoid root-owned output files by adding --user flag for your current user (only has effect if 'intex.buildMethod' is set to 'docker'). It may cause permission issues with mounted volumes on some setups, so you can disable it if you encounter problems (e.g., 'Permission denied' errors for output files)."
+				},
 				"intex.docker.enableCache": {
 					"type": "boolean",
 					"default": true,
@@ -95,19 +122,6 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Automatically build LaTeX documents on save"
-				},
-				"intex.pdfViewer": {
-					"type": "string",
-					"enum": [
-						"pdfjs",
-						"native"
-					],
-					"default": "pdfjs",
-					"enumDescriptions": [
-						"Use PDF.js for full control (SyncTeX, custom UI)",
-						"Use browser's native PDF viewer (simpler, less control)"
-					],
-					"description": "PDF viewer implementation to use"
 				},
 				"intex.buildEngine": {
 					"type": "string",
@@ -133,12 +147,13 @@
 				"intex.outputDirectory": {
 					"type": "string",
 					"default": "out",
-					"description": "Directory for build output (relative to workspace root)"
+					"description": "Directory for build output (can be an absolute path or relative to workspace root)"
 				},
 				"intex.rootFile": {
 					"type": "string",
 					"default": "",
-					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). Used for building included files and SyncTeX. Leave empty if working with single-file documents."
+					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). Used for building included files and SyncTeX. Leave empty if working with single-file documents.",
+					"$comment": "This is not being used for now. It may help for the next feature: synctex"
 				},
 				"intex.showOutputChannel": {
 					"type": "string",
@@ -160,20 +175,11 @@
 					"default": true,
 					"description": "Enable LaTeX language server (texlab) for auto-completion and navigation"
 				},
-				"intex.figureInlinePreviews": {
-					"type": "boolean",
-					"default": false,
-					"description": "Show inline image previews next to \\includegraphics commands"
-				},
 				"intex.enableIncrementalBuild": {
 					"type": "boolean",
 					"default": true,
-					"description": "Enable incremental compilation to speed up builds by only recompiling changed files"
-				},
-				"intex.experimental.enableTikZEditor": {
-					"type": "boolean",
-					"default": false,
-					"description": "⚠️ EXPERIMENTAL: Enable the TikZ WYSIWYG visual editor (work in progress)"
+					"description": "Enable incremental compilation to speed up builds by only recompiling changed files",
+					"$comment": "Does this even work?!!"
 				}
 			}
 		},
@@ -186,7 +192,7 @@
 						"filenamePattern": "*.pdf"
 					}
 				],
-				"priority": "option"
+				"priority": "default"
 			}
 		],
 		"keybindings": []

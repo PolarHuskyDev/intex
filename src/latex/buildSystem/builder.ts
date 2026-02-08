@@ -1,10 +1,12 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { Config } from "../../utils/Config";
 import { Logger } from "../../utils/Logger";
 import { EnvironmentDetector } from "./detector";
 import { LocalBuilder } from "./localBuilder";
 import { DockerBuilder } from "./dockerBuilder";
-import { IExtensionModule } from "../../interfaces/IExtensionModule";
+import { PDFViewer } from "../pdf/PDFViewer";
+
 
 export interface IBuilder {
 	build(documentUri: vscode.Uri): Promise<BuildResult>;
@@ -27,17 +29,34 @@ export interface BuildError {
 	severity: "error" | "warning";
 }
 
-export class BuildSystem implements IExtensionModule {
+export class BuildSystem {
 	private builder: IBuilder | null = null;
 	private detector: EnvironmentDetector;
 	private config = Config.instance;
 	private logger = Logger.instance;
+	private isBuilding = false;
+	private diagnosticsCollection: vscode.DiagnosticCollection;
 
 	constructor(private context: vscode.ExtensionContext) {
 		this.detector = new EnvironmentDetector();
+		this.diagnosticsCollection = vscode.languages.createDiagnosticCollection("latex");
+		this.context.subscriptions.push(this.diagnosticsCollection);
 	}
 
 	registerCommands() {
+		// Build command
+		this.context.subscriptions.push(
+			vscode.commands.registerCommand('intex.build', async () => {
+				const editor = vscode.window.activeTextEditor;
+				if (!editor || editor.document.languageId !== 'latex') {
+					vscode.window.showWarningMessage('No active LaTeX document');
+					return;
+				}
+				
+				await this.buildWithFeedback(editor.document.uri);
+			})
+		);
+
 		// Clean command
 		this.context.subscriptions.push(
 			vscode.commands.registerCommand('intex.clean', async () => {
@@ -47,10 +66,135 @@ export class BuildSystem implements IExtensionModule {
 					return;
 				}
 				
-				await this.clean(editor.document.uri);
-				vscode.window.showInformationMessage('Auxiliary files cleaned');
+				await this.cleanWithFeedback(editor.document.uri);
 			})
 		);
+
+		// Document save listener for build-on-save
+		this.context.subscriptions.push(
+			vscode.workspace.onDidSaveTextDocument(async (document) => {
+				if (
+					document.languageId === 'latex' &&
+					this.config.buildOnSave &&
+					!this.isBuilding
+				) {
+					await this.buildWithFeedback(document.uri, true);
+				}
+			})
+		);
+	}
+
+	private async buildWithFeedback(
+		documentUri: vscode.Uri,
+		isSaveTriggered = false
+	): Promise<void> {
+		if (this.isBuilding) {
+			this.logger.warn("Build already in progress");
+			return;
+		}
+
+		this.isBuilding = true;
+
+		try {
+			const result = await this.build(documentUri);
+			
+			// Publish diagnostics
+			this.publishDiagnostics(documentUri, result.errors);
+			
+			if (result.success) {
+				if (!isSaveTriggered) {
+					vscode.window.showInformationMessage("✓ Build successful!");
+				}
+				this.logger.info("Build completed successfully");
+				
+				// Show PDF: reload existing viewer or open a new one
+				if (result.pdfPath) {
+					const pdfUri = vscode.Uri.file(result.pdfPath);
+					if (PDFViewer.isOpen(pdfUri)) {
+						await PDFViewer.reload(pdfUri);
+					} else {
+						await PDFViewer.open(pdfUri);
+					}
+				}
+			} else {
+				const errorCount = result.errors.filter((e) => e.severity === "error").length;
+				const warningCount = result.errors.filter((e) => e.severity === "warning").length;
+				const message = `✗ Build failed: ${errorCount} errors, ${warningCount} warnings`;
+				vscode.window.showErrorMessage(message);
+				this.logger.error(`Build failed: ${message}`);
+			}
+
+			// Show output channel based on configuration
+			if (
+				this.config.showOutputChannel === "always" ||
+				(this.config.showOutputChannel === "onError" && !result.success)
+			) {
+				this.logger.show();
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Build error: ${error}`);
+			this.logger.error(`Build error: ${error}`);
+		} finally {
+			this.isBuilding = false;
+		}
+	}
+
+	private publishDiagnostics(
+		documentUri: vscode.Uri,
+		errors: BuildError[]
+	): void {
+		const diagnostics: vscode.Diagnostic[] = [];
+		const docDir = vscode.workspace.getWorkspaceFolder(documentUri)?.uri.fsPath || "";
+
+		// Group diagnostics by file
+		const groupedByFile = new Map<string, vscode.Diagnostic[]>();
+
+		for (const error of errors) {
+			const range = new vscode.Range(
+				new vscode.Position(Math.max(0, error.line - 1), 0),
+				new vscode.Position(Math.max(0, error.line - 1), 999)
+			);
+
+			const severity =
+				error.severity === "error"
+					? vscode.DiagnosticSeverity.Error
+					: vscode.DiagnosticSeverity.Warning;
+
+			const diagnostic = new vscode.Diagnostic(
+				range,
+				error.message,
+				severity
+			);
+			diagnostic.source = "LaTeX";
+
+			const file = error.file;
+			if (!groupedByFile.has(file)) {
+				groupedByFile.set(file, []);
+			}
+			groupedByFile.get(file)!.push(diagnostic);
+		}
+
+		// Clear previous diagnostics and publish new ones
+		this.diagnosticsCollection.clear();
+		for (const [file, diags] of groupedByFile) {
+			try {
+				const fileUri = vscode.Uri.file(`${docDir}/${file}`);
+				this.diagnosticsCollection.set(fileUri, diags);
+			} catch (error) {
+				this.logger.warn(`Failed to publish diagnostics for ${file}: ${error}`);
+			}
+		}
+	}
+
+	private async cleanWithFeedback(documentUri: vscode.Uri): Promise<void> {
+		try {
+			await this.clean(documentUri);
+			vscode.window.showInformationMessage("✓ Auxiliary files cleaned");
+			this.logger.info("Clean completed successfully");
+		} catch (error) {
+			vscode.window.showErrorMessage(`Clean error: ${error}`);
+			this.logger.error(`Clean error: ${error}`);
+		}
 	}
 
 	async activate(): Promise<void> {

@@ -38,8 +38,10 @@ export class LocalBuilder implements IBuilder {
 		const docDir = path.dirname(docPath);
 		const docName = path.basename(docPath, ".tex");
 		const engine = this.config.buildEngine;
+		const outputDir = await this.getOutputDirectory(docDir);
 
 		this.logger.info(`Building with local ${engine}: ${docPath}`);
+		this.logger.info(`Output directory: ${outputDir}`);
 
 		try {
 			let command: string;
@@ -47,9 +49,9 @@ export class LocalBuilder implements IBuilder {
 
 			if (engine === "latexmk") {
 				const options = this.config.latexmkOptions.join(" ");
-				command = `latexmk ${options} -output-directory=. "${docName}.tex"`;
+				command = `latexmk ${options} -output-directory="${outputDir}" "${docName}.tex"`;
 			} else {
-				// Direct engine call
+				// Direct engine call - note: not all engines support -output-directory
 				command = `${engine} -interaction=nonstopmode -synctex=1 -file-line-error "${docName}.tex"`;
 			}
 
@@ -66,7 +68,7 @@ export class LocalBuilder implements IBuilder {
 			this.logger.info(output);
 
 			// Check if PDF was created
-			const pdfPath = path.join(docDir, `${docName}.pdf`);
+			const pdfPath = path.join(outputDir, `${docName}.pdf`);
 			const pdfExists = await this.fileExists(pdfPath);
 
 			const errors = this.errorParser.parse(output);
@@ -91,7 +93,8 @@ export class LocalBuilder implements IBuilder {
 			const errors = this.errorParser.parse(output);
 
 			// Check if PDF was actually generated despite the error
-			const pdfPath = path.join(docDir, `${docName}.pdf`);
+			const outputDir = await this.getOutputDirectory(docDir);
+			const pdfPath = path.join(outputDir, `${docName}.pdf`);
 			const pdfExists = await this.fileExists(pdfPath);
 
 			if (pdfExists) {
@@ -122,6 +125,7 @@ export class LocalBuilder implements IBuilder {
 		const docPath = documentUri.fsPath;
 		const docDir = path.dirname(docPath);
 		const docName = path.basename(docPath, ".tex");
+		const outputDir = await this.getOutputDirectory(docDir);
 
 		const extensions = [
 			".aux",
@@ -140,12 +144,14 @@ export class LocalBuilder implements IBuilder {
 			".vrb",
 			".bcf",
 			".run.xml",
+			".minted",
+			".pdf",
 		];
 
 		this.logger.info(`Cleaning auxiliary files for ${docName}`);
 
 		for (const ext of extensions) {
-			const filePath = path.join(docDir, docName + ext);
+			const filePath = path.join(outputDir, docName + ext);
 			try {
 				await fs.unlink(filePath);
 				this.logger.info(`Deleted ${filePath}`);
@@ -153,6 +159,31 @@ export class LocalBuilder implements IBuilder {
 				// File doesn't exist, ignore
 			}
 		}
+	}
+
+	private async getOutputDirectory(docDir: string): Promise<string> {
+		const outputDir = this.config.outputDirectory;
+		let resolvedDir: string;
+
+		if (path.isAbsolute(outputDir)) {
+			resolvedDir = outputDir;
+		} else {
+			// Resolve relative to workspace root or document directory
+			const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+				vscode.Uri.file(docDir)
+			);
+			const baseDir = workspaceFolder?.uri.fsPath || docDir;
+			resolvedDir = path.resolve(baseDir, outputDir);
+		}
+
+		// Create directory if it doesn't exist
+		try {
+			await fs.mkdir(resolvedDir, { recursive: true });
+		} catch (error) {
+			this.logger.warn(`Failed to create output directory ${resolvedDir}: ${error}`);
+		}
+
+		return resolvedDir;
 	}
 
 	private async fileExists(filePath: string): Promise<boolean> {

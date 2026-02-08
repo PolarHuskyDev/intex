@@ -27,6 +27,10 @@ export class Config {
 		return this.config.get<string>("docker.image", "texlive/texlive:latest");
 	}
 
+	get dockerUserShift(): boolean {
+		return this.config.get<boolean>("docker.userShift", true);
+	}
+
 	get dockerEnableCache(): boolean {
 		return this.config.get<boolean>("docker.enableCache", true);
 	}
@@ -61,11 +65,6 @@ export class Config {
 			"showOutputChannel",
 			"onError",
 		);
-	}
-
-	// Experimental features
-	get experimentalTikZEditor(): boolean {
-		return this.config.get<boolean>("experimental.enableTikZEditor", false);
 	}
 
 	// Generic get method

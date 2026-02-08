@@ -737,17 +737,33 @@
 	// PDF loading
 	// ============================================================
 
-	async function loadPDF(pdfData) {
+	async function loadPDF(pdfData, preservePage = null, isReload = false) {
 		try {
 			loadingOverlay.classList.remove("hidden");
 
+			// Preserve scroll position for reload
+			const previousScrollTop = isReload ? mainView.scrollTop : null;
+
 			pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
 			pageCount = pdfDoc.numPages;
-			currentPage = Math.max(1, Math.min(currentPage, pageCount));
+			
+			// If a specific page was requested, use it; otherwise preserve current page if valid
+			if (preservePage !== null && preservePage >= 1 && preservePage <= pageCount) {
+				currentPage = preservePage;
+			} else {
+				currentPage = Math.max(1, Math.min(currentPage, pageCount));
+			}
 
 			updateControls();
 			await buildPageShells();
 			buildThumbnails();
+
+			// Restore scroll position if this is a reload
+			if (isReload && previousScrollTop !== null) {
+				mainView.scrollTop = previousScrollTop;
+			} else {
+				scrollToPage(currentPage);
+			}
 
 			loadingOverlay.classList.add("hidden");
 		} catch (err) {
@@ -767,7 +783,7 @@
 				const bin = atob(msg.data);
 				const bytes = new Uint8Array(bin.length);
 				for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-				loadPDF(bytes);
+				loadPDF(bytes, msg.page || null, msg.isReload || false);
 				break;
 			}
 			case "scrollToPosition":

@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
+import * as os from "os";
 import { Config } from "../../utils/Config";
 import { Logger } from "../../utils/Logger";
 import { IBuilder, BuildResult, BuildError } from "./builder";
@@ -39,8 +40,10 @@ export class DockerBuilder implements IBuilder {
 		const docName = path.basename(docPath, ".tex");
 		const engine = this.config.buildEngine;
 		const dockerImage = this.config.dockerImage;
+		const outputDir = await this.getOutputDirectory(docDir);
 
 		this.logger.info(`Building with Docker (${dockerImage}): ${docPath}`);
+		this.logger.info(`Output directory: ${outputDir}`);
 
 		// Ensure cache volume exists if enabled
 		if (this.config.dockerEnableCache) {
@@ -49,17 +52,20 @@ export class DockerBuilder implements IBuilder {
 
 		try {
 			let buildCommand: string;
+			const outputDirInContainer = "/output";
 
 			if (engine === "latexmk") {
 				const options = this.config.latexmkOptions.join(" ");
-				buildCommand = `latexmk ${options} -output-directory=. "${docName}.tex"`;
+				buildCommand = `latexmk ${options} -output-directory="${outputDirInContainer}" "${docName}.tex"`;
 			} else {
+				// Direct engine call - note: not all engines support -output-directory
 				buildCommand = `${engine} -interaction=nonstopmode -synctex=1 -file-line-error "${docName}.tex"`;
 			}
 
-			// Build Docker command
+			// Build Docker command with volume mounts
 			const volumeMounts = [
 				`-v "${docDir}:/workspace"`,
+				`-v "${outputDir}:${outputDirInContainer}"`,
 				this.config.dockerEnableCache
 					? `-v ${this.volumeName}:/usr/local/texlive`
 					: "",
@@ -67,7 +73,11 @@ export class DockerBuilder implements IBuilder {
 				.filter(Boolean)
 				.join(" ");
 
-			const dockerCommand = `docker run --rm ${volumeMounts} -w /workspace ${dockerImage} ${buildCommand}`;
+			// Get user ID mapping for Linux to ensure output files are owned by user
+			const userIdString = await this.getUserIdString();
+			const userIdPart = userIdString ? `${userIdString}` : "";
+
+			const dockerCommand = `docker run --rm ${userIdPart} ${volumeMounts} -w /workspace ${dockerImage} ${buildCommand}`;
 
 			this.logger.info(`Executing: ${dockerCommand}`);
 
@@ -80,7 +90,7 @@ export class DockerBuilder implements IBuilder {
 			this.logger.info(output);
 
 			// Check if PDF was created
-			const pdfPath = path.join(docDir, `${docName}.pdf`);
+			const pdfPath = path.join(outputDir, `${docName}.pdf`);
 			const pdfExists = await this.fileExists(pdfPath);
 
 			const errors = this.errorParser.parse(output);
@@ -105,7 +115,7 @@ export class DockerBuilder implements IBuilder {
 			const errors = this.errorParser.parse(output);
 
 			// Check if PDF was actually generated despite the error
-			const pdfPath = path.join(docDir, `${docName}.pdf`);
+			const pdfPath = path.join(outputDir, `${docName}.pdf`);
 			const pdfExists = await this.fileExists(pdfPath);
 
 			if (pdfExists) {
@@ -136,6 +146,7 @@ export class DockerBuilder implements IBuilder {
 		const docPath = documentUri.fsPath;
 		const docDir = path.dirname(docPath);
 		const docName = path.basename(docPath, ".tex");
+		const outputDir = await this.getOutputDirectory(docDir);
 
 		const extensions = [
 			".aux",
@@ -159,7 +170,7 @@ export class DockerBuilder implements IBuilder {
 		this.logger.info(`Cleaning auxiliary files for ${docName}`);
 
 		for (const ext of extensions) {
-			const filePath = path.join(docDir, docName + ext);
+			const filePath = path.join(outputDir, docName + ext);
 			try {
 				await fs.unlink(filePath);
 				this.logger.info(`Deleted ${filePath}`);
@@ -167,6 +178,62 @@ export class DockerBuilder implements IBuilder {
 				// File doesn't exist, ignore
 			}
 		}
+	}
+
+	private async getOutputDirectory(docDir: string): Promise<string> {
+		const outputDir = this.config.outputDirectory;
+		let resolvedDir: string;
+
+		if (path.isAbsolute(outputDir)) {
+			resolvedDir = outputDir;
+		} else {
+			// Resolve relative to workspace root or document directory
+			const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+				vscode.Uri.file(docDir)
+			);
+			const baseDir = workspaceFolder?.uri.fsPath || docDir;
+			resolvedDir = path.resolve(baseDir, outputDir);
+		}
+
+		// Create directory if it doesn't exist
+		try {
+			await fs.mkdir(resolvedDir, { recursive: true });
+		} catch (error) {
+			this.logger.warn(`Failed to create output directory ${resolvedDir}: ${error}`);
+		}
+
+		return resolvedDir;
+	}
+
+	private async getUserIdString(): Promise<string> {
+		// Check if user ID shifting is enabled in configuration
+		if (!this.config.dockerUserShift) {
+			return "";
+		}
+
+		// On Linux, get the actual user's UID and GID to ensure output files
+		// are owned by the user instead of root
+		if (os.platform() !== "linux") {
+			return "";
+		}
+
+		try {
+			const { stdout: uid } = await execAsync("id -u");
+			const { stdout: gid } = await execAsync("id -g");
+			const uidStr = uid.trim();
+			const gidStr = gid.trim();
+
+			if (uidStr && gidStr) {
+				this.logger.info(`Using Docker user mapping: ${uidStr}:${gidStr}`);
+				return `--user ${uidStr}:${gidStr}`;
+			}
+		} catch (error) {
+			this.logger.warn(
+				`Failed to get user ID for Docker mapping: ${error}`,
+			);
+		}
+
+		return "";
 	}
 
 	private async ensureCacheVolume(): Promise<void> {

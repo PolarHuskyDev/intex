@@ -1,8 +1,17 @@
 import * as vscode from "vscode";
 import { Logger } from "../../utils/Logger";
 
+interface ActivePanel {
+	webview: vscode.Webview;
+	documentUri: vscode.Uri;
+	currentPage: number;
+}
+
 export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 	private logger = Logger.instance;
+
+	/** Track all open PDF viewer panels by their file path */
+	private static activePanels = new Map<string, ActivePanel>();
 
 	constructor(private readonly extensionUri: vscode.Uri) {}
 
@@ -20,6 +29,40 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 		);
 	}
 
+	/**
+	 * Check whether a viewer is already open for a given PDF.
+	 */
+	static isOpen(pdfUri: vscode.Uri): boolean {
+		return PDFViewer.activePanels.has(pdfUri.fsPath);
+	}
+
+	/**
+	 * Open a new PDF viewer beside the active editor.
+	 */
+	static async open(pdfUri: vscode.Uri): Promise<void> {
+		await vscode.commands.executeCommand(
+			"vscode.openWith",
+			pdfUri,
+			"intex.pdfViewer",
+			vscode.ViewColumn.Beside,
+		);
+	}
+
+	/**
+	 * Reload the content of an already-open PDF viewer.
+	 */
+	static async reload(pdfUri: vscode.Uri): Promise<void> {
+		const panel = PDFViewer.activePanels.get(pdfUri.fsPath);
+		if (!panel) {
+			return;
+		}
+
+		const pdfData = await vscode.workspace.fs.readFile(panel.documentUri);
+		const base64 = Buffer.from(pdfData).toString("base64");
+		panel.webview.postMessage({ type: "loadPdf", data: base64, page: panel.currentPage, isReload: true });
+		Logger.instance.info(`PDF reloaded: ${pdfUri.fsPath} (${pdfData.byteLength} bytes)`);
+	}
+
 	openCustomDocument(
 		uri: vscode.Uri,
 		_openContext: vscode.CustomDocumentOpenContext,
@@ -34,6 +77,7 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 		_token: vscode.CancellationToken,
 	): void {
 		const webview = webviewPanel.webview;
+		const key = document.uri.fsPath;
 
 		// Directories with viewer assets
 		const viewerDir = vscode.Uri.joinPath(this.extensionUri, "dist", "pdf_viewer");
@@ -52,6 +96,9 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 
 		const nonce = getNonce();
 
+		// Register this panel for signal-based reloads
+		PDFViewer.activePanels.set(key, { webview, documentUri: document.uri, currentPage: 1 });
+
 		// Listen for webview messages
 		webview.onDidReceiveMessage(async (message) => {
 			if (message.type === "ready") {
@@ -63,13 +110,24 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 				} catch (e) {
 					this.logger.error(`Failed to read PDF file: ${e}`);
 				}
+			} else if (message.type === "pageChange" && typeof message.page === "number") {
+				// Track the current page for reload preservation
+				const panel = PDFViewer.activePanels.get(key);
+				if (panel) {
+					panel.currentPage = message.page;
+				}
 			} else if (message.type === "openExternal" && message.url) {
 				vscode.env.openExternal(vscode.Uri.parse(message.url));
 			}
 		});
 
+		// Unregister when the panel is disposed
+		webviewPanel.onDidDispose(() => {
+			PDFViewer.activePanels.delete(key);
+		});
+
 		webview.html = this.buildHTML(nonce, webview.cspSource, cssUri, jsUri, pdfjsUri, pdfjsWorkerUri);
-		this.logger.info(`PDF Viewer webview created for ${document.uri.fsPath}`);
+		this.logger.info(`PDF Viewer webview created for ${key}`);
 	}
 
 	// ------------------------------------------------------------------
@@ -171,7 +229,7 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 		</div>
 	</div>
 
-	<div id="loadingOverlay">Loading PDF…</div>
+	<div id="loadingOverlay">Loading PDF...</div>
 
 	<!-- Config for viewer.js -->
 	<script nonce="${nonce}">
