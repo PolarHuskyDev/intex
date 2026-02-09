@@ -7,7 +7,6 @@ import { LocalBuilder } from "./localBuilder";
 import { DockerBuilder } from "./dockerBuilder";
 import { PDFViewer } from "../pdf/PDFViewer";
 
-
 export interface IBuilder {
 	build(documentUri: vscode.Uri): Promise<BuildResult>;
 	clean(documentUri: vscode.Uri): Promise<void>;
@@ -78,7 +77,9 @@ export class BuildSystem {
 					this.config.buildOnSave &&
 					!this.isBuilding
 				) {
-					await this.buildWithFeedback(document.uri, true);
+					// Resolve to root file if configured
+					const buildUri = this.resolveRootFileUri(document.uri);
+					await this.buildWithFeedback(buildUri, true);
 				}
 			})
 		);
@@ -92,6 +93,9 @@ export class BuildSystem {
 			this.logger.warn("Build already in progress");
 			return;
 		}
+
+		// Always resolve to root file if configured
+		documentUri = this.resolveRootFileUri(documentUri);
 
 		this.isBuilding = true;
 
@@ -305,5 +309,42 @@ export class BuildSystem {
 			`Local TeX Live: ${hasLocal ? "Yes" : "No"} (${localVersion})`,
 			`Docker: ${hasDocker ? "Yes" : "No"} (${dockerVersion})`,
 		].join("\n");
+	}
+
+	/**
+	 * The build method actually in use after auto-detection.
+	 * Returns "local", "docker", or "none".
+	 */
+	get resolvedBuildMethod(): "local" | "docker" | "none" {
+		if (!this.builder) {
+			return "none";
+		}
+		if (this.builder instanceof DockerBuilder) {
+			return "docker";
+		}
+		return "local";
+	}
+
+	/**
+	 * Resolve a document URI to the configured root file if set.
+	 * Falls back to the original URI if no root file is configured.
+	 */
+	private resolveRootFileUri(documentUri: vscode.Uri): vscode.Uri {
+		const rootFile = this.config.rootFile;
+		if (!rootFile) {
+			return documentUri;
+		}
+
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (workspaceFolders && workspaceFolders.length > 0) {
+			const rootPath = workspaceFolders[0].uri.fsPath;
+			const mainTexPath = path.isAbsolute(rootFile)
+				? rootFile
+				: path.join(rootPath, rootFile);
+			this.logger.info(`Root file configured: building ${mainTexPath} instead of ${documentUri.fsPath}`);
+			return vscode.Uri.file(mainTexPath);
+		}
+
+		return documentUri;
 	}
 }

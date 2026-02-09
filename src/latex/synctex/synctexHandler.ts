@@ -4,81 +4,184 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import { Logger } from "../../utils/Logger";
 import { Config } from "../../utils/Config";
+import { PDFViewer } from "../pdf/PDFViewer";
+
+export interface SyncTexPosition {
+	page: number;
+	x: number;
+	y: number;
+}
 
 /**
- * Handles SyncTeX forward and inverse search between editor and PDF
+ * Handles SyncTeX forward and inverse search between editor and PDF.
+ * Output-directory aware and build-method (local / docker) aware.
  */
 export class SyncTexHandler {
-	constructor(
-		private context: vscode.ExtensionContext,
-		private logger: Logger,
-		private pdfPreview?: any, // Will be injected
-	) {}
+	private logger = Logger.instance;
+	private config = Config.instance;
 
 	/**
-	 * Set PDF preview reference for integration
+	 * Callback that returns the *actual* build method in use after
+	 * auto-detection ("local" | "docker" | "none").
+	 * When not set, falls back to the raw config value.
 	 */
-	public setPdfPreview(pdfPreview: any): void {
-		this.pdfPreview = pdfPreview;
+	private buildMethodResolver?: () => "local" | "docker" | "none";
+
+	constructor(private context: vscode.ExtensionContext) {}
+
+	/**
+	 * Wire up the resolver so SyncTeX uses the runtime build method,
+	 * not the raw config value (which may be "auto").
+	 */
+	public setBuildMethodResolver(
+		resolver: () => "local" | "docker" | "none",
+	): void {
+		this.buildMethodResolver = resolver;
 	}
 
 	/**
-	 * Forward search: Jump from editor line to PDF position
-	 * @param document The active LaTeX document
-	 * @param line The line number in the editor (0-based)
+	 * Register all SyncTeX-related commands with VS Code.
+	 */
+	public registerCommands(): void {
+		// Open PDF (output-directory & rootFile aware)
+		this.context.subscriptions.push(
+			vscode.commands.registerCommand("intex.openPdf", async () => {
+				const editor = vscode.window.activeTextEditor;
+				if (!editor || editor.document.languageId !== "latex") {
+					vscode.window.showWarningMessage("No active LaTeX document");
+					return;
+				}
+
+				const pdfPath = this.getPdfPath(editor.document.uri.fsPath);
+				const pdfUri = vscode.Uri.file(pdfPath);
+
+				if (PDFViewer.isOpen(pdfUri)) {
+					await PDFViewer.reload(pdfUri);
+				} else {
+					await PDFViewer.open(pdfUri);
+				}
+			}),
+		);
+
+		// Forward search (source → PDF)
+		this.context.subscriptions.push(
+			vscode.commands.registerCommand("intex.forwardSearch", async () => {
+				const editor = vscode.window.activeTextEditor;
+				if (!editor || editor.document.languageId !== "latex") {
+					vscode.window.showWarningMessage("No active LaTeX document");
+					return;
+				}
+
+				const position = await this.forwardSearch(
+					editor.document,
+					editor.selection.active.line,
+				);
+
+				if (position) {
+					const pdfPath = this.getPdfPath(editor.document.uri.fsPath);
+					const pdfUri = vscode.Uri.file(pdfPath);
+
+					if (!PDFViewer.isOpen(pdfUri)) {
+						await PDFViewer.open(pdfUri);
+						await new Promise((r) => setTimeout(r, 1500));
+					}
+
+					await PDFViewer.scrollToPosition(
+						pdfUri,
+						position.page,
+						position.x,
+						position.y,
+					);
+				}
+			}),
+		);
+
+		// Inverse search (PDF → source) — called by PDF viewer
+		this.context.subscriptions.push(
+			vscode.commands.registerCommand(
+				"intex.inverseSearch",
+				async (pdfPath: string, page: number, x: number, y: number) => {
+					await this.inverseSearch(pdfPath, page, x, y);
+				},
+			),
+		);
+	}
+
+	/** Whether the active build method is Docker. */
+	private get isDocker(): boolean {
+		if (this.buildMethodResolver) {
+			return this.buildMethodResolver() === "docker";
+		}
+		// Fallback: only explicit "docker" setting
+		return this.config.buildMethod === "docker";
+	}
+
+	// ----------------------------------------------------------------
+	// Forward search  (source → PDF)
+	// ----------------------------------------------------------------
+
+	/**
+	 * Forward search: given a document and line, return the PDF page and
+	 * coordinates where that line appears.
 	 */
 	public async forwardSearch(
 		document: vscode.TextDocument,
 		line: number,
-	): Promise<void> {
+	): Promise<SyncTexPosition | null> {
 		try {
 			const texPath = document.uri.fsPath;
-			const pdfPath = this.getMainPdfPath(texPath);
+			const { pdfPath } = this.resolveMainPaths(texPath);
 			const synctexPath = this.getSynctexPath(pdfPath);
 
 			if (!fs.existsSync(pdfPath)) {
 				vscode.window.showWarningMessage(
-					"PDF file not found. Build the document first.",
+					"PDF not found. Build the document first.",
 				);
-				return;
+				return null;
 			}
 
 			if (!fs.existsSync(synctexPath)) {
 				vscode.window.showWarningMessage(
-					"SyncTeX file not found. Ensure -synctex=1 is enabled in build settings.",
+					"SyncTeX data not found. Ensure -synctex=1 is enabled.",
 				);
-				return;
+				return null;
 			}
 
-			// Convert 0-based line to 1-based for SyncTeX
-			const synctexLine = line + 1;
+			const synctexLine = line + 1; // editor 0-based → SyncTeX 1-based
 
-			// Query SyncTeX for PDF position
 			const result = await this.querySyncTeX("view", {
 				line: synctexLine,
 				input: texPath,
 				output: pdfPath,
 			});
 
-			if (result) {
-				// Send position to PDF viewer
-				await this.sendToPdfViewer(pdfPath, result.page, result.x, result.y);
+			if (result && result.page) {
 				this.logger.info(
-					`Forward search: line ${synctexLine} → page ${result.page}`,
+					`Forward search: ${path.basename(texPath)}:${synctexLine} → page ${result.page}`,
 				);
+				return {
+					page: result.page,
+					x: result.x ?? result.h ?? 0,
+					y: result.y ?? result.v ?? 0,
+				};
 			}
+
+			this.logger.warn("Forward search: no SyncTeX result");
+			return null;
 		} catch (error) {
 			this.logger.error(`Forward search failed: ${error}`);
 			vscode.window.showErrorMessage(`Forward search failed: ${error}`);
+			return null;
 		}
 	}
 
+	// ----------------------------------------------------------------
+	// Inverse search  (PDF → source)
+	// ----------------------------------------------------------------
+
 	/**
-	 * Inverse search: Jump from PDF position to editor line
-	 * @param pdfPath Path to PDF file
-	 * @param page PDF page number
-	 * @param x X coordinate on page
-	 * @param y Y coordinate on page
+	 * Inverse search: given a PDF position, navigate the editor to the
+	 * corresponding source location.
 	 */
 	public async inverseSearch(
 		pdfPath: string,
@@ -90,101 +193,26 @@ export class SyncTexHandler {
 			const synctexPath = this.getSynctexPath(pdfPath);
 
 			if (!fs.existsSync(synctexPath)) {
-				vscode.window.showWarningMessage("SyncTeX file not found.");
+				vscode.window.showWarningMessage(
+					"SyncTeX data not found. Build with -synctex=1 enabled.",
+				);
 				return;
 			}
 
-			// Query SyncTeX for source location
 			const result = await this.querySyncTeX("edit", {
-				page: page,
-				x: x,
-				y: y,
+				page,
+				x,
+				y,
 				output: pdfPath,
 			});
 
 			if (result && result.input) {
-				// Normalize the path - synctex might return relative paths or paths with different separators
-				let inputPath = result.input;
-
-				this.logger.info(`Synctex returned input path: ${inputPath}`);
-
-				// If path is relative, resolve it relative to the PDF directory
-				if (!path.isAbsolute(inputPath)) {
-					const pdfDir = path.dirname(pdfPath);
-					inputPath = path.resolve(pdfDir, inputPath);
-					this.logger.info(`Resolved to absolute path: ${inputPath}`);
-				}
-
-				// Normalize path separators for the current platform
-				inputPath = path.normalize(inputPath);
-
-				// Try to find the file in the workspace first (better for WSL/remote scenarios)
-				let uri: vscode.Uri | undefined;
-				const workspaceFolders = vscode.workspace.workspaceFolders;
-
-				if (workspaceFolders) {
-					// Try to find the file by searching workspace folders
-					const fileName = path.basename(inputPath);
-					const files = await vscode.workspace.findFiles(
-						`**/${fileName}`,
-						null,
-						10,
-					);
-
-					if (files.length > 0) {
-						// Use the first match (or try to match the full path if possible)
-						uri = files[0];
-						this.logger.info(`Found file in workspace: ${uri.toString()}`);
-					}
-				}
-
-				// Fallback to direct file URI
-				if (!uri) {
-					uri = vscode.Uri.file(inputPath);
-					this.logger.info(`Using direct file URI: ${uri.toString()}`);
-				}
-
-				// Open or find the document
-				const document = await vscode.workspace.openTextDocument(uri);
-
-				// Check if document is already visible in an editor
-				let editor = vscode.window.visibleTextEditors.find(
-					(e) => e.document.uri.toString() === uri.toString(),
+				await this.navigateToSource(result, pdfPath);
+			} else {
+				this.logger.warn("Inverse search: no SyncTeX result");
+				vscode.window.showInformationMessage(
+					"SyncTeX could not find a source location for this position.",
 				);
-
-				if (editor) {
-					// Document already open - just reveal it without stealing focus from PDF
-					await vscode.window.showTextDocument(
-						document,
-						editor.viewColumn,
-						true,
-					);
-				} else {
-					// Document not open - open it in a new column without stealing focus
-					editor = await vscode.window.showTextDocument(
-						document,
-						vscode.ViewColumn.One,
-						true,
-					);
-				}
-
-				// Validate and convert line/column (1-based to 0-based, ensure non-negative)
-				const line = Math.max(0, (result.line || 1) - 1);
-				const column = Math.max(0, result.column || 0);
-
-				this.logger.info(
-					`Jumping to line ${result.line}, column ${result.column} (resolved to ${line}:${column})`,
-				);
-
-				const position = new vscode.Position(line, column);
-
-				editor.selection = new vscode.Selection(position, position);
-				editor.revealRange(
-					new vscode.Range(position, position),
-					vscode.TextEditorRevealType.InCenter,
-				);
-
-				this.logger.info(`Inverse search: page ${page} → line ${result.line}`);
 			}
 		} catch (error) {
 			this.logger.error(`Inverse search failed: ${error}`);
@@ -193,8 +221,131 @@ export class SyncTexHandler {
 	}
 
 	/**
-	 * Query SyncTeX using synctex command-line tool
-	 * Automatically uses Docker if build method is docker or if synctex is not available locally
+	 * Open the editor at the source location returned by inverse search.
+	 */
+	private async navigateToSource(
+		result: Record<string, any>,
+		pdfPath: string,
+	): Promise<void> {
+		let inputPath: string = result.input;
+		this.logger.info(`SyncTeX returned input path: ${inputPath}`);
+
+		// Docker builds record container paths — translate back to host
+		if (this.isDocker) {
+			inputPath = this.containerToHostPath(inputPath);
+		}
+
+		// Resolve relative paths
+		if (!path.isAbsolute(inputPath)) {
+			const workspaceRoot = this.getWorkspaceRoot();
+			if (workspaceRoot) {
+				const wsResolved = path.resolve(workspaceRoot, inputPath);
+				if (fs.existsSync(wsResolved)) {
+					inputPath = wsResolved;
+				} else {
+					inputPath = path.resolve(path.dirname(pdfPath), inputPath);
+				}
+			} else {
+				inputPath = path.resolve(path.dirname(pdfPath), inputPath);
+			}
+		}
+
+		inputPath = path.normalize(inputPath);
+		this.logger.info(`Resolved source path: ${inputPath}`);
+
+		// Try workspace file search first (handles WSL / remote scenarios)
+		let uri: vscode.Uri | undefined;
+		const fileName = path.basename(inputPath);
+		const files = await vscode.workspace.findFiles(
+			`**/${fileName}`,
+			null,
+			10,
+		);
+
+		if (files.length > 0) {
+			uri =
+				files.find((f) => path.normalize(f.fsPath) === inputPath) ||
+				files[0];
+		}
+
+		if (!uri) {
+			uri = vscode.Uri.file(inputPath);
+		}
+
+		const doc = await vscode.workspace.openTextDocument(uri);
+		let editor = vscode.window.visibleTextEditors.find(
+			(e) => e.document.uri.toString() === uri!.toString(),
+		);
+
+		if (editor) {
+			await vscode.window.showTextDocument(doc, editor.viewColumn, false);
+		} else {
+			editor = await vscode.window.showTextDocument(
+				doc,
+				vscode.ViewColumn.One,
+				false,
+			);
+		}
+
+		const line = Math.max(0, (result.line || 1) - 1);
+		const column = Math.max(0, result.column || 0);
+		const position = new vscode.Position(line, column);
+
+		editor.selection = new vscode.Selection(position, position);
+		editor.revealRange(
+			new vscode.Range(position, position),
+			vscode.TextEditorRevealType.InCenter,
+		);
+
+		this.logger.info(
+			`Inverse search → ${path.basename(inputPath)}:${result.line}`,
+		);
+	}
+
+	// ----------------------------------------------------------------
+	// Path helpers  (output-directory & rootFile aware)
+	// ----------------------------------------------------------------
+
+	/**
+	 * Resolve the main TeX file, PDF path, and output directory for a
+	 * given .tex file — taking rootFile and outputDirectory into account.
+	 */
+	public resolveMainPaths(currentTexPath: string): {
+		mainTexPath: string;
+		pdfPath: string;
+		outputDir: string;
+	} {
+		const rootFile = this.config.rootFile;
+		let mainTexPath = currentTexPath;
+
+		if (rootFile) {
+			const workspaceRoot = this.getWorkspaceRoot();
+			if (workspaceRoot) {
+				mainTexPath = path.isAbsolute(rootFile)
+					? rootFile
+					: path.join(workspaceRoot, rootFile);
+			}
+		}
+
+		const mainName = path.basename(mainTexPath, ".tex");
+		const outputDir = this.getOutputDirectory(path.dirname(mainTexPath));
+		const pdfPath = path.join(outputDir, `${mainName}.pdf`);
+
+		return { mainTexPath, pdfPath, outputDir };
+	}
+
+	/** Convenience: get only the PDF path. */
+	public getPdfPath(texPath: string): string {
+		return this.resolveMainPaths(texPath).pdfPath;
+	}
+
+	// ----------------------------------------------------------------
+	// SyncTeX CLI interaction
+	// ----------------------------------------------------------------
+
+	/**
+	 * Run the synctex command-line tool.
+	 * When the build method is "docker", runs inside the same container image.
 	 */
 	private async querySyncTeX(
 		mode: "view" | "edit",
@@ -206,144 +357,188 @@ export class SyncTexHandler {
 			y?: number;
 			output: string;
 		},
-	): Promise<any> {
-		// Check if we should use Docker
-		const config = Config.instance;
-		const buildMethod = config.buildMethod;
-		const useDocker = buildMethod === "docker";
+	): Promise<Record<string, any> | null> {
+		const useDocker = this.isDocker;
 
 		return new Promise((resolve, reject) => {
-			let command: string;
 			let baseCommand: string;
 
 			if (mode === "view") {
-				// Forward search: source → PDF
-				baseCommand = `synctex view -i "${params.line}:0:${params.input}" -o "${params.output}"`;
+				const inputArg = useDocker
+					? this.hostToContainerPath(params.input!)
+					: params.input;
+				const outputArg = useDocker
+					? this.hostToContainerPath(params.output)
+					: params.output;
+				baseCommand = `synctex view -i "${params.line}:0:${inputArg}" -o "${outputArg}"`;
 			} else {
-				// Inverse search: PDF → source
-				// Format: synctex edit -o page:x:y:file (not file:page:x:y)
-				baseCommand = `synctex edit -o "${params.page}:${params.x}:${params.y}:${params.output}"`;
+				const outputArg = useDocker
+					? this.hostToContainerPath(params.output)
+					: params.output;
+				baseCommand = `synctex edit -o "${params.page}:${params.x}:${params.y}:${outputArg}"`;
 			}
 
+			let command: string;
 			if (useDocker) {
-				// Run in Docker container
-				const docDir = path.dirname(params.output);
-				const dockerImage = config.dockerImage;
-				command = `docker run --rm -v "${docDir}:${docDir}" -w "${docDir}" ${dockerImage} ${baseCommand}`;
+				const workspaceRoot =
+					this.getWorkspaceRoot() || path.dirname(params.output);
+				const outputDir = this.getOutputDirectory(workspaceRoot);
+				const dockerImage = this.config.dockerImage;
+				command =
+					`docker run --rm` +
+					` -v "${workspaceRoot}:/workspace"` +
+					` -v "${outputDir}:/output"` +
+					` -w /workspace ${dockerImage} ${baseCommand}`;
 			} else {
 				command = baseCommand;
 			}
 
+			this.logger.info(`SyncTeX: ${command}`);
+
 			child_process.exec(
 				command,
-				{ timeout: 5000 },
+				{ timeout: 10000 },
 				(error, stdout, stderr) => {
 					if (error) {
+						this.logger.error(`SyncTeX error: ${error.message}`);
 						reject(error);
 						return;
 					}
 
 					if (stderr) {
-						this.logger.warn(`SyncTeX warning: ${stderr}`);
+						this.logger.warn(`SyncTeX stderr: ${stderr}`);
 					}
 
-					// Parse SyncTeX output
-					const result = this.parseSyncTexOutput(stdout, mode);
-					resolve(result);
+					resolve(this.parseSyncTexOutput(stdout));
 				},
 			);
 		});
 	}
 
-	/**
-	 * Parse SyncTeX command output
-	 */
-	private parseSyncTexOutput(output: string, mode: "view" | "edit"): any {
+	/** Parse the key: value output produced by the synctex CLI. */
+	private parseSyncTexOutput(output: string): Record<string, any> | null {
 		const lines = output.split("\n");
-		const result: any = {};
+		const result: Record<string, any> = {};
 
 		for (const line of lines) {
 			if (line.startsWith("Page:")) {
-				result.page = parseInt(line.split(":")[1].trim());
+				result.page = parseInt(line.substring(5).trim(), 10);
 			} else if (line.startsWith("x:")) {
-				result.x = parseFloat(line.split(":")[1].trim());
+				result.x = parseFloat(line.substring(2).trim());
 			} else if (line.startsWith("y:")) {
-				result.y = parseFloat(line.split(":")[1].trim());
+				result.y = parseFloat(line.substring(2).trim());
+			} else if (line.startsWith("h:")) {
+				result.h = parseFloat(line.substring(2).trim());
+			} else if (line.startsWith("v:")) {
+				result.v = parseFloat(line.substring(2).trim());
+			} else if (line.startsWith("W:")) {
+				result.W = parseFloat(line.substring(2).trim());
+			} else if (line.startsWith("H:")) {
+				result.H = parseFloat(line.substring(2).trim());
 			} else if (line.startsWith("Input:")) {
-				result.input = line.split(":").slice(1).join(":").trim();
+				// Value may contain colons (Windows paths C:\…)
+				result.input = line.substring(6).trim();
 			} else if (line.startsWith("Line:")) {
-				result.line = parseInt(line.split(":")[1].trim());
+				result.line = parseInt(line.substring(5).trim(), 10);
 			} else if (line.startsWith("Column:")) {
-				result.column = parseInt(line.split(":")[1].trim());
+				result.column = parseInt(line.substring(7).trim(), 10);
 			}
 		}
 
 		return Object.keys(result).length > 0 ? result : null;
 	}
 
-	/**
-	 * Send position information to PDF viewer
-	 * This sends a custom message to the WebView
-	 */
-	private async sendToPdfViewer(
-		pdfPath: string,
-		page: number,
-		x: number,
-		y: number,
-	): Promise<void> {
-		if (this.pdfPreview) {
-			// Use PDFPreview with position parameter
-			const uri = vscode.Uri.file(pdfPath.replace(/\.pdf$/, ".tex"));
-			await this.pdfPreview.showPDF(uri, { page, x, y });
-		} else {
-			// Fallback: just open the PDF without position
-			const uri = vscode.Uri.file(pdfPath);
-			await vscode.commands.executeCommand("intex.viewPdf");
-		}
-	}
+	// ----------------------------------------------------------------
+	// Docker path translation
+	// ----------------------------------------------------------------
 
-	/**
-	 * Get PDF path from TeX path
-	 */
-	private getPdfPath(texPath: string): string {
-		return texPath.replace(/\.tex$/, ".pdf");
-	}
+	/** Translate a host filesystem path to its container-mount equivalent. */
+	private hostToContainerPath(hostPath: string): string {
+		const workspaceRoot = this.getWorkspaceRoot();
+		if (workspaceRoot) {
+			const outputDir = this.getOutputDirectory(workspaceRoot);
+			const normHost = path.normalize(hostPath);
+			const normOut = path.normalize(outputDir);
+			const normWs = path.normalize(workspaceRoot);
 
-	/**
-	 * Get main PDF path, considering rootFile configuration
-	 */
-	private getMainPdfPath(currentTexPath: string): string {
-		const config = Config.instance;
-		const rootFile = config.rootFile;
-
-		if (rootFile) {
-			// Root file is configured - use it
-			const workspaceFolders = vscode.workspace.workspaceFolders;
-			if (workspaceFolders && workspaceFolders.length > 0) {
-				const rootPath = workspaceFolders[0].uri.fsPath;
-				const mainTexPath = path.join(rootPath, rootFile);
-				return this.getPdfPath(mainTexPath);
+			// Check output dir first (it may be inside the workspace)
+			if (normHost.startsWith(normOut + path.sep) || normHost === normOut) {
+				return (
+					"/output" +
+					normHost.substring(normOut.length).replace(/\\/g, "/")
+				);
+			}
+			if (normHost.startsWith(normWs + path.sep) || normHost === normWs) {
+				return (
+					"/workspace" +
+					normHost.substring(normWs.length).replace(/\\/g, "/")
+				);
 			}
 		}
-
-		// No root file configured - use current file
-		return this.getPdfPath(currentTexPath);
+		return hostPath;
 	}
 
-	/**
-	 * Get SyncTeX path from TeX or PDF path
-	 */
-	private getSynctexPath(filePath: string): string {
-		const base = filePath.replace(/\.(tex|pdf)$/, "");
-		return `${base}.synctex.gz`;
+	/** Translate a container path back to the host filesystem. */
+	private containerToHostPath(containerPath: string): string {
+		const workspaceRoot = this.getWorkspaceRoot();
+		if (workspaceRoot) {
+			const outputDir = this.getOutputDirectory(workspaceRoot);
+			if (containerPath.startsWith("/output/")) {
+				return path.join(outputDir, containerPath.substring(8));
+			}
+			if (containerPath === "/output") {
+				return outputDir;
+			}
+			if (containerPath.startsWith("/workspace/")) {
+				return path.join(workspaceRoot, containerPath.substring(11));
+			}
+			if (containerPath === "/workspace") {
+				return workspaceRoot;
+			}
+		}
+		return containerPath;
 	}
 
+	// ----------------------------------------------------------------
+	// Utility
+	// ----------------------------------------------------------------
+
 	/**
-	 * Check if SyncTeX is available
+	 * Resolve the output directory — mirrors the logic in
+	 * LocalBuilder / DockerBuilder.
 	 */
+	private getOutputDirectory(docDir: string): string {
+		const outputDir = this.config.outputDirectory;
+		if (path.isAbsolute(outputDir)) {
+			return outputDir;
+		}
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+			vscode.Uri.file(docDir),
+		);
+		const baseDir = workspaceFolder?.uri.fsPath || docDir;
+		return path.resolve(baseDir, outputDir);
+	}
+
+	/** First workspace folder root path. */
+	private getWorkspaceRoot(): string | undefined {
+		const folders = vscode.workspace.workspaceFolders;
+		return folders && folders.length > 0 ? folders[0].uri.fsPath : undefined;
+	}
+
+	/** SyncTeX data file path derived from the PDF path. */
+	private getSynctexPath(pdfPath: string): string {
+		return pdfPath.replace(/\.pdf$/, ".synctex.gz");
+	}
+
+	/** Check whether the synctex CLI is reachable. */
 	public async isSyncTexAvailable(): Promise<boolean> {
+		const useDocker = this.isDocker;
 		return new Promise((resolve) => {
-			child_process.exec("synctex --version", { timeout: 5000 }, (error) => {
+			const cmd = useDocker
+				? `docker run --rm ${this.config.dockerImage} synctex --version`
+				: "synctex --version";
+
+			child_process.exec(cmd, { timeout: 10000 }, (error) => {
 				resolve(!error);
 			});
 		});

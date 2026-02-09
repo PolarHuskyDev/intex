@@ -23,6 +23,7 @@
 	const zoomLabel      = document.getElementById("zoomLabel");
 	const fitWidthBtn    = document.getElementById("fitWidthBtn");
 	const fitPageBtn     = document.getElementById("fitPageBtn");
+	const syncSourceBtn  = document.getElementById("syncSourceBtn");
 	const searchBtn      = document.getElementById("searchBtn");
 	const sidebarToggle  = document.getElementById("sidebarToggle");
 	const searchBar      = document.getElementById("searchBar");
@@ -96,6 +97,18 @@
 		updateFitButtons();
 	});
 
+	// Reverse Search button — jump to source from top of current page
+	if (syncSourceBtn) {
+		syncSourceBtn.addEventListener("click", () => {
+			vscode.postMessage({
+				type: "synctexClick",
+				page: currentPage,
+				x: 0,
+				y: 0,
+			});
+		});
+	}
+
 	// Search bar toggle
 	searchBtn.addEventListener("click", toggleSearch);
 	searchClose.addEventListener("click", closeSearch);
@@ -149,6 +162,52 @@
 
 	// Track current page by scroll position
 	mainView.addEventListener("scroll", debounce(updateCurrentPageFromScroll, 80));
+
+	// ---- SyncTeX inverse search: double-click or Ctrl+Click on PDF ----
+	pagesContainer.addEventListener("dblclick", (e) => {
+		handleSynctexClick(e);
+	});
+	pagesContainer.addEventListener("click", (e) => {
+		if (e.ctrlKey || e.metaKey) {
+			e.preventDefault();
+			handleSynctexClick(e);
+		}
+	});
+
+	function handleSynctexClick(e) {
+		const wrapper = e.target.closest(".page-wrapper");
+		if (!wrapper) return;
+
+		const pageNum = parseInt(wrapper.dataset.page, 10);
+		const idx = pageNum - 1;
+		const viewport = pageViewports[idx];
+		if (!viewport) return;
+
+		// Click position relative to the page wrapper
+		const rect = wrapper.getBoundingClientRect();
+		const vpX = e.clientX - rect.left;
+		const vpY = e.clientY - rect.top;
+
+		// Convert viewport pixels → PDF user-space coordinates
+		const pdfPt = viewportToPdfPoint(viewport, vpX, vpY);
+
+		vscode.postMessage({
+			type: "synctexClick",
+			page: pageNum,
+			x: pdfPt[0],
+			y: pdfPt[1],
+		});
+	}
+
+	/** Invert the viewport transform to get PDF coordinates from pixel coords. */
+	function viewportToPdfPoint(viewport, vpX, vpY) {
+		const [a, b, c, d, e, f] = viewport.transform;
+		const det = a * d - b * c;
+		if (Math.abs(det) < 1e-10) return [0, 0];
+		const pdfX = (d * (vpX - e) - c * (vpY - f)) / det;
+		const pdfY = (a * (vpY - f) - b * (vpX - e)) / det;
+		return [pdfX, pdfY];
+	}
 
 	// Resize handling
 	let resizeTimer;
@@ -787,10 +846,44 @@
 				break;
 			}
 			case "scrollToPosition":
-				if (msg.page) scrollToPage(msg.page);
+				if (msg.page) {
+					scrollToPage(msg.page);
+					// Show a visual indicator at the synctex position
+					if (msg.y !== undefined) {
+						setTimeout(() => showSynctexIndicator(msg.page, msg.x || 0, msg.y), 300);
+					}
+				}
 				break;
 		}
 	});
+
+	// ============================================================
+	// SyncTeX forward-search indicator
+	// ============================================================
+
+	function showSynctexIndicator(pageNum, pdfX, pdfY) {
+		const idx = pageNum - 1;
+		if (idx < 0 || idx >= pageWrappers.length) return;
+		if (!pageRendered[idx]) return;
+
+		const viewport = pageViewports[idx];
+		if (!viewport) return;
+
+		// Convert PDF coords to viewport coords
+		const [, vpY] = viewport.convertToViewportPoint(pdfX, pdfY);
+
+		// Remove any previous indicator
+		const old = document.querySelector(".synctex-indicator");
+		if (old) old.remove();
+
+		const indicator = document.createElement("div");
+		indicator.className = "synctex-indicator";
+		indicator.style.top = Math.max(0, vpY - 2) + "px";
+		pageWrappers[idx].appendChild(indicator);
+
+		// Remove after animation
+		setTimeout(() => indicator.remove(), 2500);
+	}
 
 	// ============================================================
 	// Utility

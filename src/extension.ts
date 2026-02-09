@@ -1,10 +1,12 @@
 import * as vscode from "vscode";
 import { BuildSystem } from "./latex/buildSystem/builder";
 import { PDFViewer } from "./latex/pdf/PDFViewer";
+import { SyncTexHandler } from "./latex/synctex/synctexHandler";
 import { Logger } from "./utils/Logger";
 
 let logger: Logger = Logger.instance;
 let buildSystem: BuildSystem | null = null;
+let syncTexHandler: SyncTexHandler | null = null;
 
 /**
  * Entry point for the extension
@@ -16,7 +18,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	logger.info("InTeX extension activating...");
 
 	try {
+		// =====================================
 		// Initialize the build system
+		// =====================================
 		buildSystem = new BuildSystem(context);
 		await buildSystem.activate();
 		logger.info("Build system initialized");
@@ -24,31 +28,24 @@ export async function activate(context: vscode.ExtensionContext) {
 		logger.error(`Failed to initialize build system: ${error}`);
 		vscode.window.showErrorMessage(`InTeX: Failed to initialize build system. ${error}`);
 	}
-	
+
+	// =====================================
+	// Initialize SyncTeX handler
+	// =====================================
+	syncTexHandler = new SyncTexHandler(context);
+	if (buildSystem) {
+		syncTexHandler.setBuildMethodResolver(
+			() => buildSystem!.resolvedBuildMethod,
+		);
+	}
+	syncTexHandler.registerCommands();
+
+	// =====================================
 	// Register the custom PDF viewer
+	// =====================================
 	context.subscriptions.push(PDFViewer.register(context));
 
-	// Register open PDF command
-	context.subscriptions.push(
-		vscode.commands.registerCommand('intex.openPdf', async () => {
-			const editor = vscode.window.activeTextEditor;
-			if (!editor || editor.document.languageId !== 'latex') {
-				vscode.window.showWarningMessage('No active LaTeX document');
-				return;
-			}
-
-			const docPath = editor.document.uri.fsPath;
-			const pdfPath = docPath.replace(/\.tex$/, '.pdf');
-			const pdfUri = vscode.Uri.file(pdfPath);
-
-			if (PDFViewer.isOpen(pdfUri)) {
-				await PDFViewer.reload(pdfUri);
-			} else {
-				await PDFViewer.open(pdfUri);
-			}
-		})
-	);
-
+	
 	logger.info("InTeX extension activated successfully");
 }
 

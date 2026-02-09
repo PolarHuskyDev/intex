@@ -87,6 +87,13 @@
 				"description": "Open the PDF viewer for the built document",
 				"category": "Intex",
 				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.forwardSearch",
+				"title": "SyncTeX Forward Search",
+				"description": "Jump from the current editor position to the corresponding location in the PDF viewer",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			}
 		],
 		"menus": {},
@@ -151,9 +158,9 @@
 				},
 				"intex.rootFile": {
 					"type": "string",
-					"default": "",
-					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). Used for building included files and SyncTeX. Leave empty if working with single-file documents.",
-					"$comment": "This is not being used for now. It may help for the next feature: synctex"
+					"default": "main.tex",
+					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects.",
+					"$comment": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects."
 				},
 				"intex.showOutputChannel": {
 					"type": "string",
@@ -195,7 +202,14 @@
 				"priority": "default"
 			}
 		],
-		"keybindings": []
+		"keybindings": [
+			{
+				"command": "intex.forwardSearch",
+				"key": "ctrl+alt+j",
+				"mac": "cmd+alt+j",
+				"when": "editorLangId == latex"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
