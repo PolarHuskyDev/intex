@@ -73,21 +73,16 @@ export class TexlabClient {
 				},
 				initializationOptions: {
 					build: {
-						executable: "latexmk",
-						args: ["-pdf", "-interaction=nonstopmode", "-synctex=1", "%f"],
-						onSave: false, // We handle this ourselves
-						forwardSearchAfter: false,
+						// We handle builds ourselves - auto/local/docker and build on save logic is handled by our extension,
+						// so disable texlab's built in build on save to avoid conflicts
+						onSave: false,
+						forwardSearchAfter: false, // We handle SyncTeX ourselves
 					},
 					chktex: {
+						// disables chktex linting and use only diagnostics from texlab, which are more comprehensive.
+						// TODO: consider making this configurable if users want chktex linting in addition to texlab diagnostics
 						onEdit: false,
 						onOpenAndSave: false,
-					},
-					diagnosticsDelay: 300,
-					formatterLineLength: 80,
-					latexFormatter: "latexindent",
-					latexindent: {
-						local: null,
-						modifyLineBreaks: false,
 					},
 				},
 				outputChannel: this.logger.channel,

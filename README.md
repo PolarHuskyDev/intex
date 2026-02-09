@@ -6,7 +6,7 @@
 
 ### 🚀 Hybrid Build System
 
-- **Zero-Config**: Automatically detects your LaTeX distribution.
+- **Zero-Config**: Automatically detects your LaTeX environment, either locally installer texlive or docker.
 - **Docker Support**: No local TeX installation? No problem. InTeX can compile your documents using a containerized TeX Live environment.
 - **Local Build**: Uses your local `latexmk` or `pdflatex` installation for maximum speed.
 - **Caching**: Smart caching for Docker builds ensures fast re-compilation.
@@ -15,20 +15,16 @@
 
 - **Table Editor**: Edit LaTeX tables with an Excel-like interface. No more struggling with `&` and `\\`. Live preview as you type.
 - **Equation Editor**: Preview and edit complex math equations intuitively.
-- **Inline Previews**: See your figures, equations, and tables directly in the editor text.
-- **PDF Preview**: Integrated high-performance PDF viewer with **SyncTeX** support. Ctrl+Click to jump between code and PDF.
+- **PDF Preview**: Integrated high-performance PDF viewer with **SyncTeX** support. Check the command palette for forward search (.tex to PDF) or Ctrl+Click PDF to jump to code.
 
 ### ⚡ Productivity Tools
 
 - **IntelliSense**: Powered by `texlab` for robust auto-completion, citation suggestions, and reference management.
-- **Bibliography Manager**: specialized BibTeX editor to manage your references easily.
-- **Project Templates**: Start new projects quickly with built-in templates for papers, thesis, and presentations.
-- **Macro Wizard**: Create and manage reusable LaTeX macros visually.
 
 ## Getting Started
 
 1.  **Open a .tex file**: InTeX activates automatically.
-2.  **Build**: Press `Ctrl+Alt+B` (or `Cmd+Alt+B` on Mac) to build your project.
+2.  **Build**: Run the Intex: Build command from the command palette or save your .tex file.
 3.  **View**: The PDF preview will open automatically on successful build.
 
 ## Configuration
@@ -36,23 +32,23 @@
 InTeX works out of the box, but you can customize it:
 
 - `intex.buildMethod`: Choose `auto`, `local`, or `docker`.
-- `intex.pdfViewer`: Select `pdfjs` (recommended) or `native` viewer.
+- `intex.docker.image`: Customize the docker image used to build the documents with containers.
+- `intex.outputDirectory`: Choose a directory for output files.
 - `intex.latexmk.options`: Customize build arguments.
+- `intex.lsp.enabled`: Enable or disable LSP (language server protocol) server whenever you want.
 
-## Galery
+## Gallery
 
-## Hover Previews
+Integrated PDF viewer with:
+- SyncTeX capability (forward and reverse search)
+- Search and highlight
+- Hyperlinks (To other parts of the document and external lins too)
+- Zoom controls, zoom fit to width and fit to page
+- Page navigation through buttons, scroll and thumbnails
+- Toggle thumbnails to get more space 
+![PDF Viewer](screenshots/PDF_Viewer_to_the_side.png)
 
-![Tikz preview](screenshots/tikz_hover.png)
-![Equation preview](screenshots/equation_hover.png)
-![Table preview](screenshots/table_hover.png)
 
-## Editors
-
-![Table editor](screenshots/table_editor.png)
-![Equation editor](screenshots/equation_editor.png)
-![Bibtex editor](screenshots/bibtex_editor.png)
-![Figure editor](screenshots/figure_editor.png)
 
 ## Contributing
 
