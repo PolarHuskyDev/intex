@@ -172,21 +172,10 @@
 					"default": "onError",
 					"description": "When to show the build output channel"
 				},
-				"intex.texlab.path": {
-					"type": "string",
-					"default": "",
-					"description": "Custom path to texlab LSP server binary (leave empty for auto-detection)"
-				},
 				"intex.lsp.enabled": {
 					"type": "boolean",
 					"default": true,
 					"description": "Enable LaTeX language server (texlab) for auto-completion and navigation"
-				},
-				"intex.enableIncrementalBuild": {
-					"type": "boolean",
-					"default": true,
-					"description": "Enable incremental compilation to speed up builds by only recompiling changed files",
-					"$comment": "Does this even work?!!"
 				}
 			}
 		},

@@ -9,12 +9,12 @@ import { Logger } from "../../utils/Logger";
 
 export class TexlabInstaller {
 	private manager: TexlabManager;
+	private logger = Logger.instance;
 
 	constructor(
-		private context: vscode.ExtensionContext,
-		private logger?: Logger,
+		context: vscode.ExtensionContext
 	) {
-		this.manager = new TexlabManager(context, logger);
+		this.manager = new TexlabManager(context);
 	}
 
 	public async isInstalled(): Promise<boolean> {

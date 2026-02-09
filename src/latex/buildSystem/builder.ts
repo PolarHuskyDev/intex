@@ -272,8 +272,6 @@ export class BuildSystem {
 			);
 			return;
 		}
-
-		this.logger.info("Build system initialized successfully");
 	}
 
 	async build(documentUri: vscode.Uri): Promise<BuildResult> {

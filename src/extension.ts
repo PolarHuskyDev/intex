@@ -2,11 +2,14 @@ import * as vscode from "vscode";
 import { BuildSystem } from "./latex/buildSystem/builder";
 import { PDFViewer } from "./latex/pdf/PDFViewer";
 import { SyncTexHandler } from "./latex/synctex/synctexHandler";
+import { TexlabClient } from "./latex/lsp/texlabClient";
+import { Config } from "./utils/Config";
 import { Logger } from "./utils/Logger";
 
 let logger: Logger = Logger.instance;
 let buildSystem: BuildSystem | null = null;
 let syncTexHandler: SyncTexHandler | null = null;
+let texlabClient: TexlabClient | null = null;
 
 /**
  * Entry point for the extension
@@ -45,7 +48,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	// =====================================
 	context.subscriptions.push(PDFViewer.register(context));
 
-	
+	// =====================================
+	// Initialize texlab LSP
+	// =====================================
+	if (Config.instance.lspEnabled) {
+		texlabClient = new TexlabClient(context);
+		await texlabClient.initialize();
+	}
+
 	logger.info("InTeX extension activated successfully");
 }
 
@@ -54,6 +64,9 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 export async function deactivate() {
 	logger.info("InTeX extension deactivating...");
+	if (texlabClient) {
+		await texlabClient.stop();
+	}
 	if (buildSystem) {
 		await buildSystem.deactivate();
 	}

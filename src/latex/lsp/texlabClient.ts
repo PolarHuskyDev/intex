@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -8,19 +7,40 @@ import {
 } from "vscode-languageclient/node";
 import { Logger } from "../../utils/Logger";
 import { TexlabManager } from "./texlabManager";
+import { TexlabInstaller } from "./texlabInstaller";
 
 export class TexlabClient {
 	private client: LanguageClient | null = null;
 	private manager: TexlabManager;
+	private installer: TexlabInstaller;
+	private logger = Logger.instance;
 
 	constructor(
-		private context: vscode.ExtensionContext,
-		private logger: Logger,
+		context: vscode.ExtensionContext,
 	) {
-		this.manager = new TexlabManager(context, logger);
+		this.manager = new TexlabManager(context);
+		this.installer = new TexlabInstaller(context);
 	}
 
-	async start(): Promise<void> {
+	/**
+	 * Initialize the texlab LSP subsystem.
+	 * Installs if needed, and starts the client.
+	 */
+	async initialize(): Promise<void> {
+		try {
+			if (await this.installer.isInstalled()) {
+				await this.start();
+				this.logger.info("texlab LSP client started");
+			} else {
+				// Prompt to install in the background (non-blocking)
+				this.installer.promptInstallIfNeeded();
+			}
+		} catch (error) {
+			this.logger.error(`Failed to initialize texlab LSP: ${error}`);
+		}
+	}
+
+	private async start(): Promise<void> {
 		try {
 			// Check if texlab is available
 			const texlabPath = await this.manager.getTexlabPath();
@@ -83,7 +103,6 @@ export class TexlabClient {
 
 			// Start the client
 			await this.client.start();
-			this.logger.info("texlab LSP server started successfully");
 		} catch (error) {
 			this.logger.error(`Failed to start texlab: ${error}`);
 			// Don't show error window here to avoid annoyance if it fails silently

@@ -67,6 +67,10 @@ export class Config {
 		);
 	}
 
+	get lspEnabled(): boolean {
+		return this.config.get<boolean>("lsp.enabled", true);
+	}
+
 	// Generic get method
 	// getValue<T>(key: string): T | undefined;
 	// getValue<T>(key: string, defaultValue: T): T;
