@@ -32,3 +32,7 @@ Even though we supported hover previews in an older version we removed that impl
 
 ## Templates - Preliminary exploration  
 We are exploring the possibility to offer document templates for various type of documents (Thesis, slides, articles, letter, books, etc) or even creating a marketplace for them so all the users may share or sell their templates through the platform.
+
+
+## Advanced language and grammar checking - Preliminary exploration and Research
+Having build-in grammar and spelling checks is certainly a major task due to the immense catalog of languages in the world and the complexity of their grammar rules and spelling rules. Tackling such a big endeavor may be doable in the long run and is a pending feature with no clear implementation date or path yet.

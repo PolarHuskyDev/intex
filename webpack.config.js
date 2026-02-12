@@ -48,6 +48,24 @@ const config = {
 					from: "node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
 					to: "pdf_viewer/pdfjs/pdf.worker.min.mjs",
 				},
+				// Equation editor assets
+				{
+					from: "src/editors/equation/editor/*.{css,js}",
+					to: "equation_editor/[name][ext]",
+				},
+				// KaTeX CSS + JS + fonts for equation editor
+				{
+					from: "node_modules/katex/dist/katex.min.css",
+					to: "equation_editor/katex/katex.min.css",
+				},
+				{
+					from: "node_modules/katex/dist/katex.min.js",
+					to: "equation_editor/katex/katex.min.js",
+				},
+				{
+					from: "node_modules/katex/dist/fonts/",
+					to: "equation_editor/katex/fonts/",
+				},
 			],
 		}),
 	],

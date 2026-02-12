@@ -94,6 +94,20 @@
 				"description": "Jump from the current editor position to the corresponding location in the PDF viewer",
 				"category": "Intex",
 				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.insertEquation",
+				"title": "Insert Equation",
+				"description": "Insert a new equation block and open the visual equation editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.editEquation",
+				"title": "Edit Equation",
+				"description": "Open the visual equation editor for an existing equation",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			}
 		],
 		"menus": {},
@@ -237,6 +251,7 @@
 		"mathjax": "^4.1.0",
 		"pdfjs-dist": "^5.4.624",
 		"sharp": "^0.34.5",
+		"katex": "^0.16.21",
 		"vscode-languageclient": "^9.0.1"
 	}
 }

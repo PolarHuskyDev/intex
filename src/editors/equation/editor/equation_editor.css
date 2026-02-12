@@ -1,0 +1,278 @@
+/* ============================================================
+   InTeX Equation Editor Styles
+   ============================================================ */
+
+:root {
+	--bg: var(--vscode-editor-background, #1e1e1e);
+	--fg: var(--vscode-editor-foreground, #d4d4d4);
+	--border: var(--vscode-panel-border, #3c3c3c);
+	--input-bg: var(--vscode-input-background, #3c3c3c);
+	--input-fg: var(--vscode-input-foreground, #cccccc);
+	--btn-bg: var(--vscode-button-secondaryBackground, #3a3d41);
+	--btn-fg: var(--vscode-button-secondaryForeground, #cccccc);
+	--btn-hover: var(--vscode-button-secondaryHoverBackground, #45494e);
+	--accent: var(--vscode-focusBorder, #007acc);
+	--error-fg: var(--vscode-errorForeground, #f48771);
+	--toolbar-bg: var(--vscode-editorWidget-background, #252526);
+	--preview-bg: var(--vscode-editorWidget-background, #252526);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html, body {
+	height: 100%;
+	overflow: hidden;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--vscode-font-family, "Segoe UI", sans-serif);
+	font-size: var(--vscode-font-size, 13px);
+}
+
+#app {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+
+/* ── Toolbar ── */
+#toolbar {
+	display: flex;
+	flex-direction: column;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--border);
+}
+
+/* Options row (env type + label) */
+.toolbar-row#optionsRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--border);
+	flex-wrap: wrap;
+}
+
+.toolbar-label {
+	font-size: 12px;
+	color: var(--btn-fg);
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+#envSelect {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 3px 6px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+	cursor: pointer;
+	min-width: 140px;
+}
+#envSelect:focus {
+	border-color: var(--accent);
+}
+
+#labelInput {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+	flex: 1;
+	min-width: 100px;
+	max-width: 220px;
+}
+#labelInput:focus {
+	border-color: var(--accent);
+}
+#labelInput::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+#labelInput:disabled {
+	cursor: not-allowed;
+}
+
+/* Symbols row */
+.toolbar-row#symbolsRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	padding: 6px 10px;
+	align-items: center;
+	min-height: 38px;
+}
+
+.toolbar-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+}
+
+.symbol-group {
+	position: relative;
+}
+
+.group-toggle {
+	background: var(--btn-bg);
+	color: var(--btn-fg);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 4px 10px;
+	cursor: pointer;
+	font-size: 12px;
+	font-family: inherit;
+	white-space: nowrap;
+}
+.group-toggle:hover {
+	background: var(--btn-hover);
+}
+
+.symbol-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 100;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+	gap: 2px;
+	padding: 6px;
+	background: var(--toolbar-bg);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	max-width: 360px;
+	min-width: 200px;
+	max-height: 260px;
+	overflow-y: auto;
+}
+.symbol-dropdown.hidden {
+	display: none;
+}
+
+.symbol-btn {
+	background: var(--btn-bg);
+	color: var(--fg);
+	border: 1px solid transparent;
+	border-radius: 4px;
+	padding: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	text-align: center;
+	min-width: 34px;
+	min-height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.symbol-btn:hover {
+	background: var(--btn-hover);
+	border-color: var(--accent);
+}
+
+/* ── Editor area ── */
+#editorArea {
+	flex: 1 1 50%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border-bottom: 1px solid var(--border);
+}
+
+#latexInput {
+	flex: 1;
+	width: 100%;
+	resize: none;
+	padding: 14px 16px;
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: none;
+	outline: none;
+	font-family: var(--vscode-editor-font-family, "Cascadia Code", "Fira Code", "Consolas", monospace);
+	font-size: var(--vscode-editor-font-size, 14px);
+	line-height: 1.6;
+	tab-size: 4;
+}
+#latexInput:focus {
+	box-shadow: inset 0 0 0 1px var(--accent);
+}
+#latexInput::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+
+/* ── Preview area ── */
+#previewArea {
+	flex: 1 1 50%;
+	display: flex;
+	flex-direction: column;
+	overflow: auto;
+	padding: 20px 16px;
+	background: var(--preview-bg);
+	min-height: 0;
+}
+
+#katexOutput {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	overflow: auto;
+	font-size: 18px;
+}
+
+#katexOutput .placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+	font-style: italic;
+	font-size: 14px;
+}
+
+#katexOutput .katex-display {
+	margin: 0;
+	padding: 10px 0;
+}
+#katexOutput .katex {
+	color: var(--fg);
+}
+
+#errorOutput {
+	padding: 8px 12px;
+	margin-top: 8px;
+	background: rgba(244, 135, 113, 0.1);
+	border: 1px solid var(--error-fg);
+	border-radius: 4px;
+	color: var(--error-fg);
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	white-space: pre-wrap;
+	max-height: 80px;
+	overflow: auto;
+}
+#errorOutput.hidden {
+	display: none;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
+	border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
+}
+

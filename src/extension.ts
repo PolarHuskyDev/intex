@@ -3,6 +3,7 @@ import { BuildSystem } from "./latex/buildSystem/builder";
 import { PDFViewer } from "./latex/pdf/PDFViewer";
 import { SyncTexHandler } from "./latex/synctex/synctexHandler";
 import { TexlabClient } from "./latex/lsp/texlabClient";
+import { EquationEditor } from "./editors/equation/EquationEditor";
 import { Config } from "./utils/Config";
 import { Logger } from "./utils/Logger";
 
@@ -47,6 +48,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the custom PDF viewer
 	// =====================================
 	context.subscriptions.push(PDFViewer.register(context));
+
+	// =====================================
+	// Register the Equation Editor
+	// =====================================
+	EquationEditor.register(context);
 
 	// =====================================
 	// Initialize texlab LSP
