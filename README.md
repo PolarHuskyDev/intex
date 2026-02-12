@@ -40,25 +40,43 @@ InTeX works out of the box, but you can customize it:
 ## Gallery
 
 ### Integrated PDF viewer with:
-- SyncTeX capability (forward and reverse search)
-- Search and highlight
-- Hyperlinks (To other parts of the document and external lins too)
-- Zoom controls, zoom fit to width and fit to page
-- Page navigation through buttons, scroll and thumbnails
-- Toggle thumbnails to get more space 
+- SyncTeX forward and reverse search (Ctrl+Click on PDF to jump to source)
+- Text search with match highlighting (Ctrl+F)
+- Clickable hyperlinks — internal and external links
+- Zoom controls, fit to width, fit to page, and Ctrl+Wheel zoom
+- Page navigation via buttons, scroll, page input, and thumbnails
+- Keyboard shortcuts for navigation and zoom
+- Continuous scroll with lazy rendering for performance
+- Toggle thumbnail sidebar for more space 
 ![PDF Viewer](screenshots/PDF_Viewer_to_the_side.png)
 
 
-### Build-in equation editor
+### Built-in equation editor
 - Insert and edit commands in the command palette
-- Edit codelens button on top of every equation
-- Feature rich editor with preview
-- Greek, trigonometric functions, operators all in an easy accessible menu
+- CodeLens "Edit Equation" button on top of every equation
+- Live KaTeX preview as you type
+- Symbol palette with tabs: Greek, operators, relations, arrows, structures, functions, matrices
+- Switch between equation environments (equation, align, \$\$, inline, etc.)
+- Label editing for numbered equations
+- Real-time sync — changes update your .tex file directly
 ![Equation editor](screenshots/equation_editor.png) 
 
 
+### Table editor
+- Excel-like editing with a near-WYSIWYG interface
+- Multi-column and multi-row support (merge & split)
+- Apply borders to single or multiple cells at once
+- Column alignment (left, center, right) visually reflected in the editor
+- Caption (top or bottom), labels, and positioning in a single interface
+- CodeLens "Edit Table" button for quick access on existing tables
+- Real-time sync — changes update your .tex file directly
+![Table editor](screenshots/table_editor.png)
+
 ### Figure editor
-- 
+
+
+### BibTeX editor
+
 
 ## Contributing
 Found a bug or have a feature request? Open an issue on our [GitHub repository](https://github.com/PolarHuskyDev/intex).
