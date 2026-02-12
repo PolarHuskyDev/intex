@@ -4,17 +4,23 @@
 
 :root {
 	--bg: var(--vscode-editor-background, #1e1e1e);
-	--fg: var(--vscode-editor-foreground, #d4d4d4);
-	--border: var(--vscode-panel-border, #3c3c3c);
+	--fg: var(--vscode-foreground, #cccccc);
+	--text-muted: var(--vscode-descriptionForeground, #888888);
+	--separator: var(--vscode-editorGroup-border, var(--vscode-panel-border, #3e3e42));
 	--input-bg: var(--vscode-input-background, #3c3c3c);
 	--input-fg: var(--vscode-input-foreground, #cccccc);
+	--input-border: var(--vscode-input-border, #555555);
 	--btn-bg: var(--vscode-button-secondaryBackground, #3a3d41);
 	--btn-fg: var(--vscode-button-secondaryForeground, #cccccc);
-	--btn-hover: var(--vscode-button-secondaryHoverBackground, #45494e);
+	--btn-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+	--btn-active: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.14));
 	--accent: var(--vscode-focusBorder, #007acc);
+	--accent-hover: var(--vscode-button-hoverBackground, #005a9e);
 	--error-fg: var(--vscode-errorForeground, #f48771);
-	--toolbar-bg: var(--vscode-editorWidget-background, #252526);
-	--preview-bg: var(--vscode-editorWidget-background, #252526);
+	--toolbar-bg: var(--vscode-titleBar-activeBackground, var(--vscode-editorGroupHeader-tabsBackground, #252526));
+	--preview-bg: var(--vscode-sideBar-background, #2d2d30);
+	--scrollbar-thumb: var(--vscode-scrollbarSlider-background, #555);
+	--scrollbar-thumb-hover: var(--vscode-scrollbarSlider-hoverBackground, #777);
 }
 
 * {
@@ -43,7 +49,7 @@ html, body {
 	display: flex;
 	flex-direction: column;
 	background: var(--toolbar-bg);
-	border-bottom: 1px solid var(--border);
+	border-bottom: 1px solid var(--separator);
 }
 
 /* Options row (env type + label) */
@@ -52,7 +58,7 @@ html, body {
 	align-items: center;
 	gap: 8px;
 	padding: 6px 10px;
-	border-bottom: 1px solid var(--border);
+	border-bottom: 1px solid var(--separator);
 	flex-wrap: wrap;
 }
 
@@ -66,7 +72,7 @@ html, body {
 #envSelect {
 	background: var(--input-bg);
 	color: var(--input-fg);
-	border: 1px solid var(--border);
+	border: 1px solid var(--input-border);
 	border-radius: 4px;
 	padding: 3px 6px;
 	font-size: 12px;
@@ -82,7 +88,7 @@ html, body {
 #labelInput {
 	background: var(--input-bg);
 	color: var(--input-fg);
-	border: 1px solid var(--border);
+	border: 1px solid var(--input-border);
 	border-radius: 4px;
 	padding: 3px 8px;
 	font-size: 12px;
@@ -116,7 +122,7 @@ html, body {
 	display: flex;
 	gap: 2px;
 	padding: 6px 10px 0 10px;
-	border-bottom: 1px solid var(--border);
+	border-bottom: 1px solid var(--separator);
 	flex-wrap: wrap;
 	align-items: center;
 }
@@ -124,7 +130,7 @@ html, body {
 .symbol-tab-btn {
 	background: var(--btn-bg);
 	color: var(--btn-fg);
-	border: 1px solid var(--border);
+	border: 1px solid var(--separator);
 	border-bottom: none;
 	border-radius: 4px 4px 0 0;
 	padding: 6px 12px;
@@ -185,6 +191,9 @@ html, body {
 	background: var(--btn-hover);
 	border-color: var(--accent);
 }
+.symbol-btn:active {
+	background: var(--btn-active);
+}
 
 /* ── Section labels ── */
 .section-label {
@@ -193,7 +202,7 @@ html, body {
 	gap: 8px;
 	padding: 4px 10px;
 	background: var(--toolbar-bg);
-	border-bottom: 1px solid var(--border);
+	border-bottom: 1px solid var(--separator);
 	font-size: 11px;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
@@ -205,7 +214,7 @@ html, body {
 	content: '';
 	flex: 1;
 	height: 1px;
-	background: var(--border);
+	background: var(--separator);
 }
 
 /* ── Editor area ── */
@@ -289,18 +298,8 @@ html, body {
 }
 
 /* ── Scrollbar styling ── */
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
-::-webkit-scrollbar-track {
-	background: transparent;
-}
-::-webkit-scrollbar-thumb {
-	background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
-	border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
