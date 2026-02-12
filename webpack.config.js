@@ -53,6 +53,11 @@ const config = {
 					from: "src/editors/equation/editor/*.{css,js}",
 					to: "equation_editor/[name][ext]",
 				},
+				// Table editor assets
+				{
+					from: "src/editors/tables/editor/*.{css,js}",
+					to: "table_editor/[name][ext]",
+				},
 				// KaTeX CSS + JS + fonts for equation editor
 				{
 					from: "node_modules/katex/dist/katex.min.css",

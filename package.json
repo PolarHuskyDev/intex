@@ -108,6 +108,20 @@
 				"description": "Open the visual equation editor for an existing equation",
 				"category": "Intex",
 				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.insertTable",
+				"title": "Insert Table",
+				"description": "Insert a new table and open the visual table editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.editTable",
+				"title": "Edit Table",
+				"description": "Open the visual table editor for an existing table",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			}
 		],
 		"menus": {},

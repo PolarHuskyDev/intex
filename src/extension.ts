@@ -4,6 +4,7 @@ import { PDFViewer } from "./latex/pdf/PDFViewer";
 import { SyncTexHandler } from "./latex/synctex/synctexHandler";
 import { TexlabClient } from "./latex/lsp/texlabClient";
 import { EquationEditor } from "./editors/equation/EquationEditor";
+import { TableEditor } from "./editors/tables/TableEditor";
 import { Config } from "./utils/Config";
 import { Logger } from "./utils/Logger";
 
@@ -53,6 +54,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the Equation Editor
 	// =====================================
 	EquationEditor.register(context);
+
+	// =====================================
+	// Register the Table Editor
+	// =====================================
+	TableEditor.register(context);
 
 	// =====================================
 	// Initialize texlab LSP
