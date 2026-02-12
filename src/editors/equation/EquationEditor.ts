@@ -591,6 +591,8 @@ function buildHTML(
 	<div id="app">
 		<div id="toolbar">
 			<div class="toolbar-row" id="optionsRow">
+				<label class="toolbar-label" for="labelInput">Label</label>
+				<input type="text" id="labelInput" placeholder="eq:my-label" value="${escapedLabel}" spellcheck="false">
 				<label class="toolbar-label" for="envSelect">Type</label>
 				<select id="envSelect">
 					<option value="equation">\\begin{equation}</option>
@@ -601,16 +603,18 @@ function buildHTML(
 					<option value="inline-paren">\\( \\)</option>
 					<option value="inline-dollar">$ $</option>
 				</select>
-				<label class="toolbar-label" for="labelInput">Label</label>
-				<input type="text" id="labelInput" placeholder="eq:my-label" value="${escapedLabel}" spellcheck="false">
 			</div>
 			<div class="toolbar-row" id="symbolsRow">
-				<div class="toolbar-group" id="symbolsToolbar"></div>
+				<div id="symbolTabs" class="symbol-tabs"></div>
+				<div id="symbolContent" class="symbol-content"></div>
 			</div>
 		</div>
+		<div class="section-label">Input</div>
 		<div id="editorArea">
 			<textarea id="latexInput" spellcheck="false" placeholder="Type LaTeX here...">${escaped}</textarea>
 		</div>
+
+		<div class="section-label">Preview</div>
 		<div id="previewArea">
 			<div id="katexOutput"></div>
 			<div id="errorOutput" class="hidden"></div>

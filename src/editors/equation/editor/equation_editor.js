@@ -9,7 +9,6 @@
 	const latexInput = document.getElementById("latexInput");
 	const katexOutput = document.getElementById("katexOutput");
 	const errorOutput = document.getElementById("errorOutput");
-	const symbolsToolbar = document.getElementById("symbolsToolbar");
 	const envSelect = document.getElementById("envSelect");
 	const labelInput = document.getElementById("labelInput");
 
@@ -127,45 +126,53 @@
 		},
 	];
 
-	// ── Build toolbar ──
-	SYMBOLS.forEach((group) => {
-		const wrapper = document.createElement("div");
-		wrapper.className = "symbol-group";
+	// ── Build toolbar with tabs ──
+	const symbolTabs = document.getElementById("symbolTabs");
+	const symbolContent = document.getElementById("symbolContent");
+	let firstTab = true;
 
-		const label = document.createElement("button");
-		label.className = "group-toggle";
-		label.textContent = group.label;
-		label.title = group.label;
+	SYMBOLS.forEach((group, index) => {
+		// Create tab button
+		const tabBtn = document.createElement("button");
+		tabBtn.className = `symbol-tab-btn ${firstTab ? "active" : ""}`;
+		tabBtn.textContent = group.label;
+		tabBtn.title = group.label;
+		tabBtn.dataset.tabIndex = index;
 
-		const dropdown = document.createElement("div");
-		dropdown.className = "symbol-dropdown hidden";
+		// Create tab pane (content)
+		const tabPane = document.createElement("div");
+		tabPane.className = `symbol-tab-pane ${firstTab ? "active" : ""}`;
+		tabPane.dataset.tabIndex = index;
 
+		// Add symbols to tab pane
 		group.symbols.forEach(([latex, display]) => {
 			const btn = document.createElement("button");
 			btn.className = "symbol-btn";
 			btn.textContent = display;
 			btn.title = latex;
 			btn.addEventListener("click", () => insertAtCursor(latex));
-			dropdown.appendChild(btn);
+			tabPane.appendChild(btn);
 		});
 
-		label.addEventListener("click", (e) => {
-			e.stopPropagation();
-			document.querySelectorAll(".symbol-dropdown").forEach((d) => {
-				if (d !== dropdown) d.classList.add("hidden");
+		// Tab click handler
+		tabBtn.addEventListener("click", () => {
+			// Remove active class from all tabs and panes
+			document.querySelectorAll(".symbol-tab-btn").forEach((btn) => {
+				btn.classList.remove("active");
 			});
-			dropdown.classList.toggle("hidden");
+			document.querySelectorAll(".symbol-tab-pane").forEach((pane) => {
+				pane.classList.remove("active");
+			});
+
+			// Add active class to clicked tab and corresponding pane
+			tabBtn.classList.add("active");
+			tabPane.classList.add("active");
 		});
 
-		wrapper.appendChild(label);
-		wrapper.appendChild(dropdown);
-		symbolsToolbar.appendChild(wrapper);
-	});
+		symbolTabs.appendChild(tabBtn);
+		symbolContent.appendChild(tabPane);
 
-	document.addEventListener("click", () => {
-		document.querySelectorAll(".symbol-dropdown").forEach((d) => {
-			d.classList.add("hidden");
-		});
+		firstTab = false;
 	});
 
 	// ── Insert helper ──
