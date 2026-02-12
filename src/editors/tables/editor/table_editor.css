@@ -82,7 +82,8 @@ html, body {
 }
 
 #wrapperSelect,
-#positionSelect {
+#positionSelect,
+#captionPosSelect {
 	background: var(--input-bg);
 	color: var(--input-fg);
 	border: 1px solid var(--input-border);
@@ -95,7 +96,8 @@ html, body {
 	min-width: 80px;
 }
 #wrapperSelect:focus,
-#positionSelect:focus {
+#positionSelect:focus,
+#captionPosSelect:focus {
 	border-color: var(--accent);
 }
 
@@ -123,7 +125,8 @@ html, body {
 }
 #captionInput:disabled,
 #labelInput:disabled,
-#positionSelect:disabled {
+#positionSelect:disabled,
+#captionPosSelect:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
 }
@@ -321,7 +324,11 @@ html, body {
 	vertical-align: middle;
 	outline: none;
 	position: relative;
+	text-align: center; /* default */
 }
+#gridTable .cell.align-l { text-align: left; }
+#gridTable .cell.align-c { text-align: center; }
+#gridTable .cell.align-r { text-align: right; }
 
 #gridTable .cell.selected {
 	background: var(--grid-select-bg);
@@ -354,27 +361,6 @@ html, body {
 #gridTable .cell.border-r { border-right: 2px solid var(--border-active) !important; }
 #gridTable .cell.border-t { border-top: 2px solid var(--border-active) !important; }
 #gridTable .cell.border-b { border-bottom: 2px solid var(--border-active) !important; }
-
-/* ── LaTeX preview area ── */
-#latexArea {
-	flex: 0 0 auto;
-	max-height: 180px;
-	min-height: 80px;
-	overflow: auto;
-	background: var(--preview-bg);
-	border-top: 1px solid var(--separator);
-}
-
-#latexOutput {
-	padding: 10px 14px;
-	font-family: var(--vscode-editor-font-family, "Cascadia Code", "Fira Code", "Consolas", monospace);
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--fg);
-	white-space: pre;
-	margin: 0;
-	min-height: 60px;
-}
 
 /* ── Scrollbar styling ── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }

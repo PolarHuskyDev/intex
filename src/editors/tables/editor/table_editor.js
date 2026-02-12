@@ -11,10 +11,11 @@
 	// ══════════════════════════════════════════
 
 	const gridTable = document.getElementById("gridTable");
-	const latexOutput = document.getElementById("latexOutput");
+
 	const wrapperSelect = document.getElementById("wrapperSelect");
 	const positionSelect = document.getElementById("positionSelect");
 	const captionInput = document.getElementById("captionInput");
+	const captionPosSelect = document.getElementById("captionPosSelect");
 	const labelInput = document.getElementById("labelInput");
 
 	// Alignment buttons
@@ -46,8 +47,8 @@
 	// Constants & state
 	// ══════════════════════════════════════════
 
-	const MIN_GRID = 10;
-	const PADDING = 4;
+	const MIN_GRID = 1;
+	const PADDING = 1;
 
 	/**
 	 * @typedef {{ content: string, colspan: number, rowspan: number, hidden: boolean, mergedBy?: {row:number,col:number} }} Cell
@@ -69,6 +70,7 @@
 		caption: "",
 		label: "",
 		centering: true,
+		captionPosition: "top",
 	};
 
 	let sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
@@ -146,6 +148,7 @@
 		state.caption = data.caption || "";
 		state.label = data.label || "";
 		state.centering = data.centering !== false;
+		state.captionPosition = data.captionPosition || "top";
 	}
 
 	function parseColSpec(spec) {
@@ -385,6 +388,63 @@
 	// LaTeX Generator: State → LaTeX
 	// ══════════════════════════════════════════
 
+	/**
+	 * Grows the backing arrays so there are always PADDING empty rows/cols
+	 * beyond the used range. Returns true if the grid was resized.
+	 */
+	function ensureCapacity() {
+		const { maxRow, maxCol, empty } = getUsedRange();
+		const neededRows = empty ? MIN_GRID : maxRow + 1 + PADDING;
+		const neededCols = empty ? MIN_GRID : maxCol + 1 + PADDING;
+		const targetRows = Math.max(neededRows, MIN_GRID);
+		const targetCols = Math.max(neededCols, MIN_GRID);
+
+		if (targetRows <= state.numRows && targetCols <= state.numCols) {
+			return false; // no resize needed
+		}
+
+		const newRows = Math.max(targetRows, state.numRows);
+		const newCols = Math.max(targetCols, state.numCols);
+
+		// Expand existing rows to new column count
+		for (let r = 0; r < state.numRows; r++) {
+			for (let c = state.numCols; c < newCols; c++) {
+				state.cells[r][c] = { content: "", colspan: 1, rowspan: 1, hidden: false };
+			}
+		}
+		// Add new rows
+		for (let r = state.numRows; r < newRows; r++) {
+			state.cells[r] = [];
+			for (let c = 0; c < newCols; c++) {
+				state.cells[r][c] = { content: "", colspan: 1, rowspan: 1, hidden: false };
+			}
+		}
+
+		// Expand colAligns
+		for (let c = state.numCols; c < newCols; c++) {
+			state.colAligns[c] = "c";
+		}
+
+		// Expand colBorders (length = numCols + 1)
+		for (let c = state.colBorders.length; c <= newCols; c++) {
+			state.colBorders[c] = false;
+		}
+
+		// Expand rowLines (length = numRows + 1, each has numCols entries)
+		for (let r = 0; r < state.rowLines.length; r++) {
+			for (let c = state.numCols; c < newCols; c++) {
+				state.rowLines[r][c] = false;
+			}
+		}
+		for (let r = state.rowLines.length; r <= newRows; r++) {
+			state.rowLines[r] = new Array(newCols).fill(false);
+		}
+
+		state.numRows = newRows;
+		state.numCols = newCols;
+		return true;
+	}
+
 	function getUsedRange() {
 		let minRow = Infinity, maxRow = -1, minCol = Infinity, maxCol = -1;
 
@@ -537,15 +597,24 @@
 			if (hlineAfter) { lines.push(hlineAfter); }
 		}
 
-		const tabularBody = lines.join("\n");
+		const tabularBody = lines.map(l => "\t" + l).join("\n");
 		const tabular = `\\begin{tabular}{${colSpec}}\n${tabularBody}\n\\end{tabular}`;
 
 		if (state.wrapper !== "tabular") {
 			const parts = [`\\begin{${state.wrapper}}[${state.position}]`];
-			if (state.centering) { parts.push("\\centering"); }
-			parts.push(tabular);
-			if (state.caption !== undefined) { parts.push(`\\caption{${state.caption}}`); }
-			if (state.label !== undefined) { parts.push(`\\label{${state.label}}`); }
+			if (state.centering) { parts.push("\t\\centering"); }
+			// Caption on top
+			if (state.captionPosition === "top") {
+				if (state.caption !== undefined) { parts.push(`\t\\caption{${state.caption}}`); }
+				if (state.label !== undefined) { parts.push(`\t\\label{${state.label}}`); }
+			}
+			// Indent tabular block one level inside wrapper
+			parts.push(tabular.split("\n").map(l => "\t" + l).join("\n"));
+			// Caption on bottom
+			if (state.captionPosition !== "top") {
+				if (state.caption !== undefined) { parts.push(`\t\\caption{${state.caption}}`); }
+				if (state.label !== undefined) { parts.push(`\t\\label{${state.label}}`); }
+			}
 			parts.push(`\\end{${state.wrapper}}`);
 			return parts.join("\n");
 		}
@@ -675,6 +744,10 @@
 				if (cell.colspan > 1 || cell.rowspan > 1) {
 					td.classList.add("merged");
 				}
+
+				// Alignment class
+				const align = state.colAligns[c] || "c";
+				td.classList.add("align-" + align);
 
 				// Border classes
 				if (state.colBorders[c]) { td.classList.add("border-l"); }
@@ -822,6 +895,10 @@
 	// ══════════════════════════════════════════
 
 	document.addEventListener("keydown", (e) => {
+		// Don't intercept keys when focus is on toolbar inputs/selects
+		const tag = document.activeElement && document.activeElement.tagName;
+		if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") { return; }
+
 		// If we're editing a cell, handle edit-mode keys
 		if (editingCell) {
 			if (e.key === "Escape") {
@@ -1305,6 +1382,7 @@
 		const isWrapped = state.wrapper !== "tabular";
 		positionSelect.disabled = !isWrapped;
 		captionInput.disabled = !isWrapped;
+		captionPosSelect.disabled = !isWrapped;
 		labelInput.disabled = !isWrapped;
 	}
 
@@ -1324,6 +1402,11 @@
 		onStateChange();
 	});
 
+	captionPosSelect.addEventListener("change", () => {
+		state.captionPosition = captionPosSelect.value;
+		onStateChange();
+	});
+
 	labelInput.addEventListener("input", () => {
 		state.label = labelInput.value;
 		onStateChange();
@@ -1333,6 +1416,7 @@
 		wrapperSelect.value = state.wrapper;
 		positionSelect.value = state.position || "h";
 		captionInput.value = state.caption || "";
+		captionPosSelect.value = state.captionPosition || "top";
 		labelInput.value = state.label || "";
 		updateWrapperUI();
 	}
@@ -1344,6 +1428,9 @@
 	let debounceTimer = null;
 
 	function onStateChange() {
+		if (ensureCapacity()) {
+			renderGrid();
+		}
 		updateLatexPreview();
 		clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(() => {
@@ -1352,7 +1439,7 @@
 	}
 
 	function updateLatexPreview() {
-		latexOutput.textContent = generateLatex();
+		// LaTeX is synced directly to the .tex file
 	}
 
 	// ══════════════════════════════════════════

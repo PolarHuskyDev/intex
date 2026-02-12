@@ -569,6 +569,8 @@ function buildHTML(
 		<div id="toolbar">
 			<!-- Row 1: Table wrapper options -->
 			<div class="toolbar-row" id="tableOptionsRow">
+				<label class="toolbar-label" for="labelInput">Label</label>
+				<input type="text" id="labelInput" placeholder="tab:my-table" spellcheck="false">
 				<label class="toolbar-label" for="wrapperSelect">Env</label>
 				<select id="wrapperSelect">
 					<option value="tabular">tabular</option>
@@ -586,8 +588,10 @@ function buildHTML(
 				</select>
 				<label class="toolbar-label" for="captionInput">Caption</label>
 				<input type="text" id="captionInput" placeholder="Table caption..." spellcheck="false">
-				<label class="toolbar-label" for="labelInput">Label</label>
-				<input type="text" id="labelInput" placeholder="tab:my-table" spellcheck="false">
+				<select id="captionPosSelect" title="Caption position">
+					<option value="top">top</option>
+					<option value="bottom">bottom</option>
+				</select>
 			</div>
 
 			<!-- Row 2: Formatting toolbar -->
@@ -635,11 +639,6 @@ function buildHTML(
 			</div>
 		</div>
 
-		<!-- LaTeX output preview -->
-		<div class="section-label">LaTeX Output</div>
-		<div id="latexArea">
-			<pre id="latexOutput"></pre>
-		</div>
 	</div>
 
 	<script nonce="${nonce}">
