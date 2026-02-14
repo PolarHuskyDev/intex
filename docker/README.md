@@ -22,11 +22,13 @@ RUN tlmgr update --self && \
 ```
 
 Build and use:
+
 ```bash
 docker build -t my-intex-latex .
 ```
 
 Then configure in VS Code settings:
+
 ```json
 "intex.docker.image": "my-intex-latex"
 ```
@@ -36,6 +38,7 @@ Then configure in VS Code settings:
 ∫TeX automatically creates a named Docker volume `intex-texlive-cache` to cache installed packages between builds. This significantly speeds up subsequent builds.
 
 To manage the cache:
+
 ```bash
 # View cache volume
 docker volume inspect intex-texlive-cache
@@ -50,7 +53,9 @@ docker system df -v | grep intex
 ## Troubleshooting
 
 ### Permission Issues
+
 If you encounter permission issues with Docker builds:
+
 ```bash
 # On Linux, ensure your user is in the docker group
 sudo usermod -aG docker $USER
@@ -58,13 +63,16 @@ sudo usermod -aG docker $USER
 ```
 
 ### Image Pull Issues
+
 ```bash
 # Manually pull the image
 docker pull texlive/texlive:latest
 ```
 
 ### Build Performance
+
 For faster builds:
+
 1. Enable volume caching: `"intex.docker.enableCache": true`
 2. Use a smaller base image if you don't need all packages
 3. Consider switching to local build if you frequently compile

@@ -1,0 +1,351 @@
+/* ============================================================
+   InTeX Figure Editor Styles
+   ============================================================ */
+
+:root {
+	--bg: var(--vscode-editor-background, #1e1e1e);
+	--fg: var(--vscode-foreground, #cccccc);
+	--text-muted: var(--vscode-descriptionForeground, #888888);
+	--separator: var(--vscode-editorGroup-border, var(--vscode-panel-border, #3e3e42));
+	--input-bg: var(--vscode-input-background, #3c3c3c);
+	--input-fg: var(--vscode-input-foreground, #cccccc);
+	--input-border: var(--vscode-input-border, #555555);
+	--btn-bg: var(--vscode-button-secondaryBackground, #3a3d41);
+	--btn-fg: var(--vscode-button-secondaryForeground, #cccccc);
+	--btn-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+	--btn-active: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.14));
+	--accent: var(--vscode-focusBorder, #007acc);
+	--accent-hover: var(--vscode-button-hoverBackground, #005a9e);
+	--error-fg: var(--vscode-errorForeground, #f48771);
+	--toolbar-bg: var(--vscode-titleBar-activeBackground, var(--vscode-editorGroupHeader-tabsBackground, #252526));
+	--preview-bg: var(--vscode-sideBar-background, #2d2d30);
+	--scrollbar-thumb: var(--vscode-scrollbarSlider-background, #555);
+	--scrollbar-thumb-hover: var(--vscode-scrollbarSlider-hoverBackground, #777);
+	--card-bg: var(--vscode-editorWidget-background, #2d2d30);
+	--card-border: var(--vscode-editorWidget-border, #454545);
+	--card-selected-shadow: 0 0 0 2px var(--accent);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html, body {
+	height: 100%;
+	overflow: hidden;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--vscode-font-family, "Segoe UI", sans-serif);
+	font-size: var(--vscode-font-size, 13px);
+}
+
+#app {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+
+/* ══════════════════════════════════════════
+   Toolbar
+   ══════════════════════════════════════════ */
+
+#toolbar {
+	display: flex;
+	flex-direction: column;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	flex-shrink: 0;
+}
+
+.toolbar-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--separator);
+	flex-wrap: wrap;
+}
+
+.toolbar-label {
+	font-size: 12px;
+	color: var(--btn-fg);
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+/* Selects */
+#wrapperSelect,
+#positionSelect,
+#captionPosSelect {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 6px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+	cursor: pointer;
+}
+#wrapperSelect:focus,
+#positionSelect:focus,
+#captionPosSelect:focus {
+	border-color: var(--accent);
+}
+#wrapperSelect:disabled,
+#positionSelect:disabled,
+#captionPosSelect:disabled {
+	cursor: not-allowed;
+}
+
+/* Text inputs */
+#labelInput,
+#captionInput,
+#pathInput,
+#widthInput,
+#heightInput,
+#scaleInput,
+#angleInput,
+#searchInput {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+}
+#labelInput:focus,
+#captionInput:focus,
+#pathInput:focus,
+#widthInput:focus,
+#heightInput:focus,
+#scaleInput:focus,
+#angleInput:focus,
+#searchInput:focus {
+	border-color: var(--accent);
+}
+#labelInput::placeholder,
+#captionInput::placeholder,
+#pathInput::placeholder,
+#widthInput::placeholder,
+#heightInput::placeholder,
+#scaleInput::placeholder,
+#angleInput::placeholder,
+#searchInput::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+#labelInput:disabled,
+#captionInput:disabled,
+#positionSelect:disabled,
+#captionPosSelect:disabled {
+	cursor: not-allowed;
+}
+
+/* Specific sizing */
+#labelInput {
+	flex: 0 1 160px;
+	min-width: 100px;
+}
+#captionInput {
+	flex: 1;
+	min-width: 100px;
+}
+#widthInput,
+#heightInput {
+	width: 120px;
+}
+#scaleInput,
+#angleInput {
+	width: 70px;
+}
+
+/* ══════════════════════════════════════════
+   Section labels
+   ══════════════════════════════════════════ */
+
+.section-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 10px;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--btn-fg);
+	font-weight: 600;
+	user-select: none;
+	flex-shrink: 0;
+}
+.section-label::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: var(--separator);
+}
+
+/* ══════════════════════════════════════════
+   Image section
+   ══════════════════════════════════════════ */
+
+#imageSection {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* Path row */
+#pathRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid var(--separator);
+	flex-shrink: 0;
+}
+#pathRow #pathInput {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Search row */
+#searchRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--separator);
+	flex-shrink: 0;
+}
+#searchRow #searchInput {
+	flex: 1;
+	min-width: 0;
+	padding: 4px 8px;
+}
+#refreshBtn {
+	background: var(--btn-bg);
+	color: var(--btn-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 16px;
+	cursor: pointer;
+	line-height: 1;
+	transition: background-color 0.15s ease;
+}
+#refreshBtn:hover {
+	background: var(--btn-hover);
+	border-color: var(--accent);
+}
+#refreshBtn:active {
+	background: var(--btn-active);
+}
+
+/* ══════════════════════════════════════════
+   Image grid (scrollable)
+   ══════════════════════════════════════════ */
+
+#imageGrid {
+	flex: 1;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	padding: 12px 10px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	align-items: flex-start;
+	align-content: flex-start;
+}
+
+/* ── Card ── */
+.image-card {
+	flex: 0 0 120px;
+	display: flex;
+	flex-direction: column;
+	border: 2px solid var(--card-border);
+	border-radius: 6px;
+	overflow: hidden;
+	cursor: pointer;
+	background: var(--card-bg);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.image-card:hover {
+	border-color: var(--accent);
+	transform: translateY(-2px);
+}
+.image-card.selected {
+	border-color: var(--accent);
+	box-shadow: var(--card-selected-shadow);
+}
+
+/* Thumbnail area */
+.card-thumb {
+	width: 100%;
+	height: 88px;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.15);
+}
+.card-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Placeholder for non-previewable files (PDF, EPS, etc.) */
+.file-placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--text-muted);
+	letter-spacing: 0.5px;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.08);
+}
+
+/* Filename label */
+.card-label {
+	display: block;
+	padding: 4px 6px;
+	font-size: 11px;
+	color: var(--fg);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+	border-top: 1px solid var(--separator);
+	background: var(--card-bg);
+}
+
+/* Empty state */
+#emptyMessage {
+	padding: 24px 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 13px;
+}
+#emptyMessage.hidden {
+	display: none;
+}
+
+/* ══════════════════════════════════════════
+   Scrollbar styling
+   ══════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }

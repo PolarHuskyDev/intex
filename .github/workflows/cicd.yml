@@ -2,10 +2,10 @@ name: CI/CD
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ["v*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -16,31 +16,32 @@ jobs:
         node-version: [22.x]
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Compile
-      run: npm run compile
-      
-    # - name: Lint
-    #   run: npm run lint
+      - uses: actions/checkout@v4
 
-    - name: Package Extension
-      run: npx vsce package --out intex.vsix
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: intex-extension-${{ matrix.node-version }}
-        path: intex.vsix
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npm run compile
+
+      # - name: Lint
+      #   run: npm run lint
+
+      - name: Package Extension
+        run: npx vsce package --out intex.vsix
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: intex-extension-${{ matrix.node-version }}
+          path: intex.vsix
+          retention-days: 5
 
   release:
     name: Create Release
@@ -49,36 +50,36 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: intex-extension-22.x
-        
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: "*.vsix"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Publish to VS Code Marketplace
-      # Only run if VSCE_PAT is set
-      if: env.VSCE_PAT != ''
-      run: npx vsce publish --packagePath intex.vsix -p ${{ secrets.VSCE_PAT }}
-      env:
-        VSCE_PAT: ${{ secrets.VSCE_PAT }}
-    
-    - name: Publish to Open VSX Registry
-      # Only run if OPENVSX_TOKEN is set
-      if: env.OPENVSX_TOKEN != ''
-      run: npx ovsx publish --packagePath intex.vsix -p ${{ secrets.OPENVSX_TOKEN }}
-      env:
-        OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: intex-extension-22.x
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.vsix"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to VS Code Marketplace
+        # Only run if VSCE_PAT is set
+        if: env.VSCE_PAT != ''
+        run: npx vsce publish --packagePath intex.vsix -p ${{ secrets.VSCE_PAT }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX Registry
+        # Only run if OPENVSX_TOKEN is set
+        if: env.OPENVSX_TOKEN != ''
+        run: npx ovsx publish --packagePath intex.vsix -p ${{ secrets.OPENVSX_TOKEN }}
+        env:
+          OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}

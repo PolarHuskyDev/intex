@@ -1,72 +1,90 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class Config {
-    private config: vscode.WorkspaceConfiguration;
+	private static _instance: Config;
+	private config: vscode.WorkspaceConfiguration;
 
-    constructor() {
-        this.config = vscode.workspace.getConfiguration('intex');
-    }
+	private constructor() {
+		this.config = vscode.workspace.getConfiguration("intex");
+	}
 
-    refresh(): void {
-        this.config = vscode.workspace.getConfiguration('intex');
-    }
+	static get instance(): Config {
+		if (!Config._instance) {
+			Config._instance = new Config();
+		}
+		return Config._instance;
+	}
 
-    getBuildMethod(): 'auto' | 'local' | 'docker' {
-        return this.config.get<'auto' | 'local' | 'docker'>('buildMethod', 'auto');
-    }
+	refresh(): void {
+		this.config = vscode.workspace.getConfiguration("intex");
+	}
 
-    getDockerImage(): string {
-        return this.config.get<string>('docker.image', 'texlive/texlive:latest');
-    }
+	get buildMethod(): "auto" | "local" | "docker" {
+		return this.config.get<"auto" | "local" | "docker">("buildMethod", "auto");
+	}
 
-    getDockerEnableCache(): boolean {
-        return this.config.get<boolean>('docker.enableCache', true);
-    }
+	get dockerImage(): string {
+		return this.config.get<string>("docker.image", "texlive/texlive:latest");
+	}
 
-    getBuildOnSave(): boolean {
-        return this.config.get<boolean>('buildOnSave', true);
-    }
+	get dockerUserShift(): boolean {
+		return this.config.get<boolean>("docker.userShift", true);
+	}
 
-    getBuildEngine(): string {
-        return this.config.get<string>('buildEngine', 'latexmk');
-    }
+	get dockerEnableCache(): boolean {
+		return this.config.get<boolean>("docker.enableCache", true);
+	}
 
-    getLatexmkOptions(): string[] {
-        return this.config.get<string[]>('latexmk.options', [
-            '-pdf',
-            '-interaction=nonstopmode',
-            '-synctex=1',
-            '-file-line-error'
-        ]);
-    }
+	get buildOnSave(): boolean {
+		return this.config.get<boolean>("buildOnSave", true);
+	}
 
-    getOutputDirectory(): string {
-        return this.config.get<string>('outputDirectory', 'out');
-    }
+	get buildEngine(): string {
+		return this.config.get<string>("buildEngine", "latexmk");
+	}
 
-    getRootFile(): string {
-        return this.config.get<string>('rootFile', '');
-    }
+	get latexmkOptions(): string[] {
+		return this.config.get<string[]>("latexmk.options", [
+			"-pdf",
+			"-interaction=nonstopmode",
+			"-synctex=1",
+			"-file-line-error",
+		]);
+	}
 
-    getShowOutputChannel(): 'never' | 'onError' | 'always' {
-        return this.config.get<'never' | 'onError' | 'always'>('showOutputChannel', 'onError');
-    }
+	get outputDirectory(): string {
+		return this.config.get<string>("outputDirectory", "out");
+	}
 
-    // Experimental features
-    getExperimentalTikZEditor(): boolean {
-        return this.config.get<boolean>('experimental.enableTikZEditor', false);
-    }
+	get rootFile(): string {
+		return this.config.get<string>("rootFile", "");
+	}
 
-    // Generic get method
-    get<T>(key: string): T | undefined;
-    get<T>(key: string, defaultValue: T): T;
-    get<T>(key: string, defaultValue?: T): T | undefined {
-        return this.config.get<T>(key, defaultValue as any);
-    }
+	get showOutputChannel(): "never" | "onError" | "always" {
+		return this.config.get<"never" | "onError" | "always">(
+			"showOutputChannel",
+			"onError",
+		);
+	}
 
-    // Generic update method
-    async update(key: string, value: any, target?: vscode.ConfigurationTarget): Promise<void> {
-        await this.config.update(key, value, target);
-        this.refresh(); // Refresh config after update
-    }
+	get lspEnabled(): boolean {
+		return this.config.get<boolean>("lsp.enabled", true);
+	}
+
+	// Generic get method
+	// getValue<T>(key: string): T | undefined;
+	// getValue<T>(key: string, defaultValue: T): T;
+	// getValue<T>(key: string, defaultValue?: T): T | undefined {
+	// 	return this.config.get<T>(key, defaultValue as any);
+	// }
+
+	// Generic update method
+	// async update(
+	// 	key: string,
+	// 	value: any,
+	// 	target?: vscode.ConfigurationTarget,
+	// ): Promise<void> {
+	// 	await this.config.update(key, value, target);
+	// 	this.refresh(); // Refresh config after update
+	// }
 }

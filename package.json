@@ -29,8 +29,6 @@
 		"academic"
 	],
 	"activationEvents": [
-		"onLanguage:latex",
-		"onLanguage:tex",
 		"workspaceContains:**/*.tex"
 	],
 	"main": "./dist/extension.js",
@@ -71,187 +69,83 @@
 		"commands": [
 			{
 				"command": "intex.build",
-				"title": "InTeX: Build LaTeX Document",
-				"icon": "$(tools)"
+				"title": "Build",
+				"description": "Build the active LaTeX document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
 				"command": "intex.clean",
-				"title": "InTeX: Clean Auxiliary Files",
-				"icon": "$(trash)"
+				"title": "Clean",
+				"description": "Clean auxiliary files from the active LaTeX document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.cleanBuild",
-				"title": "InTeX: Clean and Build",
-				"icon": "$(refresh)"
+				"command": "intex.openPdf",
+				"title": "Open PDF",
+				"description": "Open the PDF viewer for the built document",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.viewPdf",
-				"title": "InTeX: View PDF",
-				"icon": "$(file-pdf)"
+				"command": "intex.forwardSearch",
+				"title": "SyncTeX Forward Search",
+				"description": "Jump from the current editor position to the corresponding location in the PDF viewer",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.selectBuilder",
-				"title": "InTeX: Select Build Method (Local/Docker)",
-				"icon": "$(settings-gear)"
+				"command": "intex.insertEquation",
+				"title": "Insert Equation",
+				"description": "Insert a new equation block and open the visual equation editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.detectEnvironment",
-				"title": "InTeX: Detect LaTeX Environment"
+				"command": "intex.editEquation",
+				"title": "Edit Equation",
+				"description": "Open the visual equation editor for an existing equation",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.installTexlab",
-				"title": "InTeX: Install/Update texlab LSP Server"
+				"command": "intex.insertTable",
+				"title": "Insert Table",
+				"description": "Insert a new table and open the visual table editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.synctex.forwardSearch",
-				"title": "InTeX: Forward Search (Go to PDF)",
-				"icon": "$(arrow-right)"
-			},
-			{
-				"command": "intex.newFromTemplate",
-				"title": "InTeX: New Project from Template",
-				"icon": "$(new-file)"
-			},
-			{
-				"command": "intex.insertCitation",
-				"title": "InTeX: Insert Citation",
-				"icon": "$(references)"
-			},
-			{
-				"command": "intex.editBibtexEntry",
-				"title": "InTeX: Edit BibTeX Entry",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "intex.findRootFile",
-				"title": "InTeX: Find Root File"
-			},
-			{
-				"command": "intex.analyzeProject",
-				"title": "InTeX: Analyze Project Structure"
+				"command": "intex.editTable",
+				"title": "Edit Table",
+				"description": "Open the visual table editor for an existing table",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
 				"command": "intex.insertFigure",
-				"title": "InTeX: Insert Figure",
-				"icon": "$(file-media)"
+				"title": "Insert Figure",
+				"description": "Insert a new figure and open the visual figure editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.previewFigure",
-				"title": "InTeX: Preview Figure at Cursor"
+				"command": "intex.editFigure",
+				"title": "Edit Figure",
+				"description": "Open the visual figure editor for an existing figure",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			},
 			{
-				"command": "intex.showAllFigures",
-				"title": "InTeX: Show All Figures"
-			},
-			{
-				"command": "intex.toggleInlinePreviews",
-				"title": "InTeX: Toggle Inline Figure Previews"
-			},
-			{
-				"command": "intex.previewTikz",
-				"title": "InTeX: Preview TikZ Code",
-				"icon": "$(preview)"
-			},
-			{
-				"command": "intex.compileTikzStandalone",
-				"title": "InTeX: Compile TikZ as Standalone"
-			},
-			{
-				"command": "intex.insertTikzTemplate",
-				"title": "InTeX: Insert TikZ Template"
-			},
-			{
-				"command": "intex.generatePlot",
-				"title": "InTeX: Generate Plot with Wizard"
-			},
-			{
-				"command": "intex.insertPgfplotsTemplate",
-				"title": "InTeX: Insert Pgfplots Template"
-			},
-			{
-				"command": "intex.openEquationEditor",
-				"title": "InTeX: Open Equation Editor",
-				"icon": "$(symbol-operator)"
-			},
-			{
-				"command": "intex.insertMathSymbol",
-				"title": "InTeX: Insert Math Symbol"
-			},
-			{
-				"command": "intex.wrapInMath",
-				"title": "InTeX: Wrap Selection in Math Mode"
-			},
-			{
-				"command": "intex.openTableEditor",
-				"title": "InTeX: Open Table Editor",
-				"icon": "$(table)"
-			},
-			{
-				"command": "intex.editTableAtCursor",
-				"title": "InTeX: Edit Table at Cursor"
-			},
-			{
-				"command": "intex.insertTableTemplate",
-				"title": "InTeX: Insert Table Template"
-			},
-			{
-				"command": "intex.createMacro",
-				"title": "InTeX: Create Macro",
-				"icon": "$(symbol-snippet)"
-			},
-			{
-				"command": "intex.insertCommonMacros",
-				"title": "InTeX: Insert Common Macros"
-			},
-			{
-				"command": "intex.extractMacro",
-				"title": "InTeX: Extract Selection to Macro"
-			},
-			{
-				"command": "intex.clearBuildCache",
-				"title": "InTeX: Clear Build Cache"
-			},
-			{
-				"command": "intex.showCacheStats",
-				"title": "InTeX: Show Cache Statistics"
-			},
-			{
-				"command": "intex.toggleIncrementalBuild",
-				"title": "InTeX: Toggle Incremental Build"
-			},
-			{
-				"command": "intex.toggleInlineDecorations",
-				"title": "InTeX: Toggle Inline Previews"
+				"command": "intex.openBibtexEditor",
+				"title": "Open BibTeX Editor",
+				"description": "Open the visual editor for managing BibTeX entries",
+				"category": "Intex",
+				"enablement": "editorLangId == bibtex"
 			}
 		],
-		"menus": {
-			"editor/title": [
-				{
-					"when": "resourceLangId == latex",
-					"command": "intex.build",
-					"group": "navigation@1"
-				},
-				{
-					"when": "resourceLangId == latex",
-					"command": "intex.viewPdf",
-					"group": "navigation@2"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "intex.build",
-					"when": "resourceLangId == latex"
-				},
-				{
-					"command": "intex.clean",
-					"when": "resourceLangId == latex"
-				},
-				{
-					"command": "intex.viewPdf",
-					"when": "resourceLangId == latex"
-				}
-			]
-		},
+		"menus": {},
 		"configuration": {
 			"title": "InTeX",
 			"properties": {
@@ -270,6 +164,11 @@
 					"default": "texlive/texlive:latest",
 					"description": "Docker image to use for containerized builds"
 				},
+				"intex.docker.userShift": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable user ID shifting for Docker builds on Linux to avoid root-owned output files by adding --user flag for your current user (only has effect if 'intex.buildMethod' is set to 'docker'). It may cause permission issues with mounted volumes on some setups, so you can disable it if you encounter problems (e.g., 'Permission denied' errors for output files)."
+				},
 				"intex.docker.enableCache": {
 					"type": "boolean",
 					"default": true,
@@ -279,19 +178,6 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Automatically build LaTeX documents on save"
-				},
-				"intex.pdfViewer": {
-					"type": "string",
-					"enum": [
-						"pdfjs",
-						"native"
-					],
-					"default": "pdfjs",
-					"enumDescriptions": [
-						"Use PDF.js for full control (SyncTeX, custom UI)",
-						"Use browser's native PDF viewer (simpler, less control)"
-					],
-					"description": "PDF viewer implementation to use"
 				},
 				"intex.buildEngine": {
 					"type": "string",
@@ -317,12 +203,12 @@
 				"intex.outputDirectory": {
 					"type": "string",
 					"default": "out",
-					"description": "Directory for build output (relative to workspace root)"
+					"description": "Directory for build output (can be an absolute path or relative to workspace root)"
 				},
 				"intex.rootFile": {
 					"type": "string",
-					"default": "",
-					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). Used for building included files and SyncTeX. Leave empty if working with single-file documents."
+					"default": "main.tex",
+					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects."
 				},
 				"intex.showOutputChannel": {
 					"type": "string",
@@ -334,51 +220,36 @@
 					"default": "onError",
 					"description": "When to show the build output channel"
 				},
-				"intex.texlab.path": {
-					"type": "string",
-					"default": "",
-					"description": "Custom path to texlab LSP server binary (leave empty for auto-detection)"
+				"intex.bibtexEditor.autoOpen": {
+					"type": "boolean",
+					"default": false,
+					"description": "Automatically open the visual BibTeX editor beside the source when a .bib file is opened"
 				},
 				"intex.lsp.enabled": {
 					"type": "boolean",
 					"default": true,
 					"description": "Enable LaTeX language server (texlab) for auto-completion and navigation"
-				},
-				"intex.figureInlinePreviews": {
-					"type": "boolean",
-					"default": false,
-					"description": "Show inline image previews next to \\includegraphics commands"
-				},
-				"intex.enableIncrementalBuild": {
-					"type": "boolean",
-					"default": true,
-					"description": "Enable incremental compilation to speed up builds by only recompiling changed files"
-				},
-				"intex.experimental.enableTikZEditor": {
-					"type": "boolean",
-					"default": false,
-					"description": "⚠️ EXPERIMENTAL: Enable the TikZ WYSIWYG visual editor (work in progress)"
 				}
 			}
 		},
 		"customEditors": [
 			{
-				"viewType": "intex.pdfPreview",
-				"displayName": "InTeX PDF Preview",
+				"viewType": "intex.pdfViewer",
+				"displayName": "InTeX PDF Viewer",
 				"selector": [
 					{
 						"filenamePattern": "*.pdf"
 					}
 				],
-				"priority": "option"
+				"priority": "default"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "intex.synctex.forwardSearch",
+				"command": "intex.forwardSearch",
 				"key": "ctrl+alt+j",
 				"mac": "cmd+alt+j",
-				"when": "editorTextFocus && editorLangId == latex"
+				"when": "editorLangId == latex"
 			}
 		]
 	},
@@ -391,18 +262,22 @@
 		"watch-tests": "tsc -p . -w --outDir out",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/runTest.js",
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@types/adm-zip": "^0.5.7",
+		"@types/mathjax": "^0.0.40",
 		"@types/node": "^20.19.30",
 		"@types/vscode": "^1.85.0",
-		"@typescript-eslint/eslint-plugin": "^6.15.0",
-		"@typescript-eslint/parser": "^6.15.0",
+		"@typescript-eslint/eslint-plugin": "^8.54.0",
+		"@typescript-eslint/parser": "^8.54.0",
 		"@vscode/test-electron": "^2.3.8",
 		"@vscode/vsce": "^3.7.1",
-		"eslint": "^8.56.0",
+		"copy-webpack-plugin": "^13.0.1",
+		"eslint": "^9.39.2",
 		"ovsx": "^0.10.8",
+		"prettier": "^3.8.1",
 		"ts-loader": "^9.5.1",
 		"typescript": "^5.3.3",
 		"webpack": "^5.89.0",
@@ -412,6 +287,10 @@
 		"adm-zip": "^0.5.16",
 		"html2canvas": "^1.4.1",
 		"jimp": "^1.6.0",
+		"mathjax": "^4.1.0",
+		"pdfjs-dist": "^5.4.624",
+		"sharp": "^0.34.5",
+		"katex": "^0.16.21",
 		"vscode-languageclient": "^9.0.1"
 	}
 }

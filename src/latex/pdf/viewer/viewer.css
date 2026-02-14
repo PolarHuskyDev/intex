@@ -1,0 +1,384 @@
+/* ============================================================
+   InTeX PDF Viewer — continuous-scroll, selectable, searchable
+   ============================================================ */
+
+*, *::before, *::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+:root {
+	/* Map VS Code theme tokens to local shorthand variables */
+	--bg: var(--vscode-editor-background, #1e1e1e);
+	--toolbar-bg: var(--vscode-titleBar-activeBackground, var(--vscode-editorGroupHeader-tabsBackground, #252526));
+	--sidebar-bg: var(--vscode-sideBar-background, #2d2d30);
+	--separator: var(--vscode-editorGroup-border, var(--vscode-panel-border, #3e3e42));
+	--text: var(--vscode-foreground, #cccccc);
+	--text-muted: var(--vscode-descriptionForeground, #888888);
+	--accent: var(--vscode-focusBorder, #007acc);
+	--accent-hover: var(--vscode-button-hoverBackground, #005a9e);
+	--input-bg: var(--vscode-input-background, #3c3c3c);
+	--input-border: var(--vscode-input-border, #555555);
+	--thumb-selected: var(--vscode-list-activeSelectionBackground, rgba(0, 122, 204, 0.3));
+	--btn-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+	--btn-active: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.14));
+	--scrollbar-thumb: var(--vscode-scrollbarSlider-background, #555);
+	--scrollbar-thumb-hover: var(--vscode-scrollbarSlider-hoverBackground, #777);
+	--search-highlight: rgba(255, 200, 0, 0.35);
+	--search-active: rgba(255, 140, 0, 0.65);
+	--link-highlight: rgba(0, 122, 204, 0.15);
+	--link-hover: rgba(0, 122, 204, 0.30);
+	--toggle-active-bg: var(--vscode-inputOption-activeBackground, rgba(0, 122, 204, 0.3));
+	--toggle-active-border: var(--vscode-inputOption-activeBorder, var(--vscode-focusBorder, #007acc));
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+		Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif);
+	font-size: var(--vscode-font-size, 13px);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+/* ---- Layout ---- */
+#app {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+}
+
+/* ============ Toolbar ============ */
+#toolbar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 40px;
+	min-height: 40px;
+	flex-shrink: 0;
+	padding: 0 10px;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	z-index: 100;
+	user-select: none;
+}
+
+.tb-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--text);
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.15s;
+}
+.tb-btn:hover:not(:disabled) { background: var(--btn-hover); }
+.tb-btn:active:not(:disabled) { background: var(--btn-active); }
+.tb-btn:disabled { opacity: 0.35; cursor: default; }
+.tb-btn.active {
+	background: var(--toggle-active-bg);
+	outline: 1px solid var(--toggle-active-border);
+	outline-offset: -1px;
+}
+.tb-btn.active:hover { background: var(--toggle-active-bg); }
+.tb-btn svg {
+	width: 18px;
+	height: 18px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.tb-spacer { flex: 1; }
+
+#pageInput {
+	width: 42px;
+	height: 24px;
+	background: var(--input-bg);
+	border: 1px solid var(--input-border);
+	border-radius: 3px;
+	color: var(--text);
+	text-align: center;
+	font-size: 13px;
+	outline: none;
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+#pageInput::-webkit-outer-spin-button,
+#pageInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#pageInput:focus { border-color: var(--accent); }
+
+.tb-label {
+	font-size: 13px;
+	color: var(--text);
+	white-space: nowrap;
+}
+
+#zoomLabel {
+	min-width: 42px;
+	text-align: center;
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+}
+
+.tb-sep {
+	width: 1px;
+	height: 20px;
+	background: var(--separator);
+	margin: 0 4px;
+}
+
+/* ============ Search bar ============ */
+#searchBar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 36px;
+	min-height: 36px;
+	flex-shrink: 0;
+	padding: 0 10px;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	z-index: 99;
+	user-select: none;
+}
+#searchBar.hidden { display: none; }
+
+#searchInput {
+	width: 220px;
+	height: 24px;
+	background: var(--input-bg);
+	border: 1px solid var(--input-border);
+	border-radius: 3px;
+	color: var(--text);
+	padding: 0 8px;
+	font-size: 13px;
+	outline: none;
+}
+#searchInput:focus { border-color: var(--accent); }
+
+#searchInfo {
+	font-size: 12px;
+	color: var(--text-muted);
+	min-width: 70px;
+}
+
+/* ============ Main area ============ */
+#content {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+}
+
+/* ---- Continuous scroll main view ---- */
+#mainView {
+	flex: 1;
+	overflow: auto;
+	background: var(--bg);
+}
+
+#pagesContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 16px 20px;
+	gap: 12px;
+}
+
+/* ---- Per-page wrapper ---- */
+.page-wrapper {
+	position: relative;
+	background: white;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+	overflow: hidden;
+}
+
+.page-canvas {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+/* ---- pdf.js text layer ---- */
+.page-wrapper .textLayer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	line-height: 1.0;
+	z-index: 2;
+}
+
+.page-wrapper .textLayer span,
+.page-wrapper .textLayer br {
+	color: transparent;
+	position: absolute;
+	white-space: pre;
+	transform-origin: 0% 0%;
+	pointer-events: auto;
+	cursor: text;
+}
+
+.page-wrapper .textLayer span::selection {
+	background: rgba(0, 100, 200, 0.4);
+	color: transparent;
+}
+
+.page-wrapper .textLayer span::-moz-selection {
+	background: rgba(0, 100, 200, 0.4);
+	color: transparent;
+}
+
+/* ---- Annotation / hyperlink layer ---- */
+.page-wrapper .annotationLayer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	pointer-events: none; /* let text selection pass through by default */
+}
+
+.pdf-link {
+	position: absolute;
+	pointer-events: auto;
+	cursor: pointer;
+	background: var(--link-highlight);
+	border-bottom: 1.5px dashed var(--accent);
+	border-radius: 2px;
+	transition: background 0.15s;
+	text-decoration: none;
+}
+.pdf-link:hover {
+	background: var(--link-hover);
+}
+
+/* ---- Search highlights ---- */
+.search-highlight {
+	position: absolute;
+	background: rgba(255, 200, 0, 0.35);
+	border-radius: 2px;
+	pointer-events: none;
+	z-index: 3;
+	mix-blend-mode: multiply;
+}
+.search-highlight.active {
+	background: rgba(255, 140, 0, 0.55);
+	outline: 2px solid rgba(255, 140, 0, 0.85);
+}
+
+/* ---- Sidebar separator ---- */
+#sidebarSep {
+	width: 1px;
+	background: var(--separator);
+}
+
+/* ---- Thumbnail sidebar ---- */
+#sidebar {
+	width: 150px;
+	min-width: 150px;
+	background: var(--sidebar-bg);
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	transition: width 0.2s, min-width 0.2s, padding 0.2s, opacity 0.2s;
+}
+
+/* Collapsed sidebar */
+#content.sidebar-collapsed #sidebarSep {
+	display: none;
+}
+#content.sidebar-collapsed #sidebar {
+	width: 0;
+	min-width: 0;
+	padding: 0;
+	overflow: hidden;
+	opacity: 0;
+}
+
+.thumb-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	padding: 4px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+.thumb-item:hover { background: var(--btn-hover); }
+.thumb-item.selected {
+	background: var(--thumb-selected);
+	outline-offset: -1px;
+}
+
+.thumb-item canvas {
+	width: 134px;
+	display: block;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+	pointer-events: none;
+}
+
+.thumb-label {
+	font-size: 10px;
+	color: var(--text);
+	text-align: center;
+}
+
+/* ---- Loading overlay ---- */
+#loadingOverlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--bg);
+	color: var(--text);
+	font-size: 15px;
+	z-index: 200;
+	transition: opacity 0.25s;
+}
+#loadingOverlay.hidden {
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* ---- SyncTeX forward-search indicator ---- */
+.synctex-indicator {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 4px;
+	background: rgba(255, 200, 0, 0.6);
+	box-shadow: 0 0 8px 2px rgba(255, 200, 0, 0.4);
+	pointer-events: none;
+	z-index: 50;
+	animation: synctex-pulse 2.5s ease-out forwards;
+}
+
+@keyframes synctex-pulse {
+	0%   { opacity: 1; }
+	60%  { opacity: 0.7; }
+	100% { opacity: 0; }
+}
