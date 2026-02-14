@@ -7,7 +7,7 @@ The current implementation is top notch but there are certain features we may in
 ## Embedded latex engine (WASM LaTeX) - Preliminary exploration
 This will really lower user entry level by not requiring any external dependency (texlive or docker to compile documents). That certainly will be much appreciated and will be very useful for new users and web distributions of vscode (vscode in the browser) therefore allowing to skip local latex installation completely.
 
-The same logic applies to other latex tools like syctex and LSP server 
+The same logic applies to other latex tools like synctex and LSP server 
 
 ## Mendelay/Zotero integration - Planned
 This is a most-requested features from the academic world and will help users to keep their readings in sync with their citations. A really cool and nice feature.
