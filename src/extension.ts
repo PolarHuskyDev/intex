@@ -5,6 +5,7 @@ import { SyncTexHandler } from "./latex/synctex/synctexHandler";
 import { TexlabClient } from "./latex/lsp/texlabClient";
 import { EquationEditor } from "./editors/equation/EquationEditor";
 import { TableEditor } from "./editors/tables/TableEditor";
+import { FigureEditor } from "./editors/figures/FigureEditor";
 import { Config } from "./utils/Config";
 import { Logger } from "./utils/Logger";
 
@@ -59,6 +60,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the Table Editor
 	// =====================================
 	TableEditor.register(context);
+
+	// =====================================
+	// Register the Figure Editor
+	// =====================================
+	FigureEditor.register(context);
 
 	// =====================================
 	// Initialize texlab LSP

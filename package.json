@@ -122,6 +122,20 @@
 				"description": "Open the visual table editor for an existing table",
 				"category": "Intex",
 				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.insertFigure",
+				"title": "Insert Figure",
+				"description": "Insert a new figure and open the visual figure editor",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.editFigure",
+				"title": "Edit Figure",
+				"description": "Open the visual figure editor for an existing figure",
+				"category": "Intex",
+				"enablement": "editorLangId == latex"
 			}
 		],
 		"menus": {},
