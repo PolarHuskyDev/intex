@@ -21,7 +21,7 @@ This is a most-requested features from the academic world and will help users to
 
 But we may introduce new advanced visual editors for:
 - Complex tables with `\multirow` and `\multicolumn` support
-- Figures with more advanced diagraming capabilities like tikz, circuitikz (electronic diagrams), xskak (chess), Pgfplots (function mathematical plots), modiagram (molecular orbital diagrams), tikz-feynman (Feynman diagrams), chemfig (structural chemical formulae), mhchem (Chemical formulae and equations), 
+- Figures with more advanced diagramming capabilities like tikz, circuitikz (electronic diagrams), xskak (chess), Pgfplots (function mathematical plots), modiagram (molecular orbital diagrams), tikz-feynman (Feynman diagrams), chemfig (structural chemical formulae), mhchem (Chemical formulae and equations), 
 
 > Note: That the not having visual editors does not mean not being able to generate documents with such feature.
 
