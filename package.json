@@ -208,8 +208,7 @@
 				"intex.rootFile": {
 					"type": "string",
 					"default": "main.tex",
-					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects.",
-					"$comment": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects."
+					"description": "Main LaTeX file for multi-file projects (e.g., 'main.tex'). When set, builds and SyncTeX always target this file instead of the active editor document. Leave empty for single-file projects."
 				},
 				"intex.showOutputChannel": {
 					"type": "string",
