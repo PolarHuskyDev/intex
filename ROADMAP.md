@@ -9,7 +9,7 @@ This will really lower user entry level by not requiring any external dependency
 
 The same logic applies to other latex tools like synctex and LSP server 
 
-## Mendelay/Zotero integration - Planned
+## Mendeley/Zotero integration - Planned
 This is a most-requested features from the academic world and will help users to keep their readings in sync with their citations. A really cool and nice feature.
 
 ## Visual advanced editors - Partially done
