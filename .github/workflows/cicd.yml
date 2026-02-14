@@ -41,6 +41,7 @@ jobs:
         with:
           name: intex-extension-${{ matrix.node-version }}
           path: intex.vsix
+          retention-days: 5
 
   release:
     name: Create Release
