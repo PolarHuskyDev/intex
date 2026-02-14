@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { Config } from "../../utils/Config";
-import { Logger } from "../../utils/Logger";
+import { Config } from "../../utils/config";
+import { Logger } from "../../utils/logger";
 import { EnvironmentDetector } from "./detector";
 import { LocalBuilder } from "./localBuilder";
 import { DockerBuilder } from "./dockerBuilder";

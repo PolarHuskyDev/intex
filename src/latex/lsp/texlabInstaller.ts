@@ -5,7 +5,7 @@ import * as https from "https";
 import * as child_process from "child_process";
 import AdmZip = require("adm-zip");
 import { TexlabManager } from "./texlabManager";
-import { Logger } from "../../utils/Logger";
+import { Logger } from "../../utils/logger";
 
 export class TexlabInstaller {
 	private manager: TexlabManager;

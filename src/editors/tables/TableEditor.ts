@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Logger } from "../../utils/Logger";
+import { Logger } from "../../utils/logger";
 
 /**
  * Regex patterns for detecting LaTeX table environments.

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
-import { Logger } from "../../utils/Logger";
+import { Logger } from "../../utils/logger";
 
 interface FileHash {
 	path: string;

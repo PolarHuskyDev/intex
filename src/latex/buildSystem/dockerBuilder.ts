@@ -4,8 +4,8 @@ import * as fs from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as os from "os";
-import { Config } from "../../utils/Config";
-import { Logger } from "../../utils/Logger";
+import { Config } from "../../utils/config";
+import { Logger } from "../../utils/logger";
 import { IBuilder, BuildResult, BuildError } from "./builder";
 import { ErrorParser } from "./errorParser";
 

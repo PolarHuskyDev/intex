@@ -5,7 +5,7 @@ import {
 	ServerOptions,
 	Executable,
 } from "vscode-languageclient/node";
-import { Logger } from "../../utils/Logger";
+import { Logger } from "../../utils/logger";
 import { TexlabManager } from "./texlabManager";
 import { TexlabInstaller } from "./texlabInstaller";
 

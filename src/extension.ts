@@ -7,8 +7,8 @@ import { EquationEditor } from "./editors/equation/EquationEditor";
 import { TableEditor } from "./editors/tables/TableEditor";
 import { FigureEditor } from "./editors/figures/FigureEditor";
 import { BibtexEditor } from "./editors/bibtex/BibtexEditor";
-import { Config } from "./utils/Config";
-import { Logger } from "./utils/Logger";
+import { Config } from "./utils/config";
+import { Logger } from "./utils/logger";
 
 let logger: Logger = Logger.instance;
 let buildSystem: BuildSystem | null = null;

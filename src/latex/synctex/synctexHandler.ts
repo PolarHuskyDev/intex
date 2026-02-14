@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import * as child_process from "child_process";
-import { Logger } from "../../utils/Logger";
-import { Config } from "../../utils/Config";
+import { Logger } from "../../utils/logger";
+import { Config } from "../../utils/config";
 import { PDFViewer } from "../pdf/PDFViewer";
 
 export interface SyncTexPosition {
