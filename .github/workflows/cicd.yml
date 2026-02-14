@@ -62,25 +62,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: intex-extension-22.x
-          path: intex.vsix
+          path: ./artifacts
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.vsix"
+          files: "artifacts/*.vsix"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to VS Code Marketplace
         # Only run if VSCE_PAT is set
         if: env.VSCE_PAT != ''
-        run: npx vsce publish --packagePath intex.vsix -p ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath artifacts/intex.vsix -p ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Publish to Open VSX Registry
         # Only run if OPENVSX_TOKEN is set
         if: env.OPENVSX_TOKEN != ''
-        run: npx ovsx publish --packagePath intex.vsix -p ${{ secrets.OPENVSX_TOKEN }}
+        run: npx ovsx publish --packagePath artifacts/intex.vsix -p ${{ secrets.OPENVSX_TOKEN }}
         env:
           OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
