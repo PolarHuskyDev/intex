@@ -136,6 +136,13 @@
 				"description": "Open the visual figure editor for an existing figure",
 				"category": "Intex",
 				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "intex.openBibtexEditor",
+				"title": "Open BibTeX Editor",
+				"description": "Open the visual editor for managing BibTeX entries",
+				"category": "Intex",
+				"enablement": "editorLangId == bibtex"
 			}
 		],
 		"menus": {},
@@ -213,6 +220,11 @@
 					],
 					"default": "onError",
 					"description": "When to show the build output channel"
+				},
+				"intex.bibtexEditor.autoOpen": {
+					"type": "boolean",
+					"default": false,
+					"description": "Automatically open the visual BibTeX editor beside the source when a .bib file is opened"
 				},
 				"intex.lsp.enabled": {
 					"type": "boolean",

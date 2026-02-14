@@ -15,6 +15,7 @@
 
 - **Table Editor**: Edit LaTeX tables with an Excel-like interface. No more struggling with `&` and `\\`. Live preview as you type.
 - **Equation Editor**: Preview and edit complex math equations intuitively.
+- **Figure Editor**: Browse workspace images, configure sizing and placement, and insert figures visually.
 - **PDF Preview**: Integrated high-performance PDF viewer with **SyncTeX** support. Check the command palette for forward search (.tex to PDF) or Ctrl+Click PDF to jump to code.
 
 ### ⚡ Productivity Tools
@@ -73,10 +74,37 @@ InTeX works out of the box, but you can customize it:
 ![Table editor](screenshots/table_editor.png)
 
 ### Figure editor
+- Insert and edit figures from the command palette
+- CodeLens "Edit Figure" button on top of every figure
+- Browse workspace images in a searchable, scrollable grid with thumbnails
+- Click any image to select it — path fills in automatically
+- Configure width, height, scale, and rotation angle visually
+- Switch between standalone `\includegraphics` and `figure`/`figure*` environments
+- Caption (top or bottom), labels, and float positioning in a single interface
+- Real-time sync — changes update your .tex file directly
+![Figure editor](screenshots/figure_editor.png)
 
 
 ### BibTeX editor
+- Full CRUD for `.bib` entries — create, edit, and delete without touching raw BibTeX
+- Searchable sidebar: filter entries by citation key, title, or author instantly
+- Detail form with dynamic fields — add or remove any BibTeX field on the fly
+- Supports all standard entry types (article, book, inproceedings, thesis, etc.)
+- Auto-opens beside your `.bib` file (configurable via `intex.bibtexEditor.autoOpen`)
+- Manually open through the command palette
+- Real-time sync — changes update your `.bib` file directly
+![BibTeX editor](screenshots/bibtex_editor.png)
 
+
+## Changelog
+- Bug fixes: Table editor had a really hard time opening and parsing complex tables with multi-row and multi-column cells. The new parser is able to handle those better.
+- UI improvements to all editors. All editors UI has been reworked and refined for better look and better usability
+- PDF Viewer has been greatly enhanced with:
+  - Page Thumbnails for navigation
+  - SyncTex indicator
+  - Continuos scroll allows the user to see the full PDF document just by scrolling
+  - Search functionality
+- Cleaned up lots of redundant commands from the command palette
 
 ## Contributing
 Found a bug or have a feature request? Open an issue on our [GitHub repository](https://github.com/PolarHuskyDev/intex).

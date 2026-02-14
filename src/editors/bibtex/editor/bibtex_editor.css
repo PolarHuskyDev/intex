@@ -1,0 +1,477 @@
+/* ============================================================
+   InTeX BibTeX Editor Styles
+   ============================================================ */
+
+:root {
+	--bg: var(--vscode-editor-background, #1e1e1e);
+	--fg: var(--vscode-foreground, #cccccc);
+	--text-muted: var(--vscode-descriptionForeground, #888888);
+	--separator: var(--vscode-editorGroup-border, var(--vscode-panel-border, #3e3e42));
+	--input-bg: var(--vscode-input-background, #3c3c3c);
+	--input-fg: var(--vscode-input-foreground, #cccccc);
+	--input-border: var(--vscode-input-border, #555555);
+	--btn-bg: var(--vscode-button-secondaryBackground, #3a3d41);
+	--btn-fg: var(--vscode-button-secondaryForeground, #cccccc);
+	--btn-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+	--btn-active: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.14));
+	--accent: var(--vscode-focusBorder, #007acc);
+	--accent-hover: var(--vscode-button-hoverBackground, #005a9e);
+	--error-fg: var(--vscode-errorForeground, #f48771);
+	--danger-bg: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+	--danger-border: var(--vscode-inputValidation-errorBorder, #be1100);
+	--toolbar-bg: var(--vscode-titleBar-activeBackground, var(--vscode-editorGroupHeader-tabsBackground, #252526));
+	--sidebar-bg: var(--vscode-sideBar-background, #252526);
+	--card-bg: var(--vscode-editorWidget-background, #2d2d30);
+	--card-border: var(--vscode-editorWidget-border, #454545);
+	--card-selected-shadow: 0 0 0 2px var(--accent);
+	--scrollbar-thumb: var(--vscode-scrollbarSlider-background, #555);
+	--scrollbar-thumb-hover: var(--vscode-scrollbarSlider-hoverBackground, #777);
+	--list-hover: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.04));
+	--list-active: var(--vscode-list-activeSelectionBackground, #094771);
+	--list-active-fg: var(--vscode-list-activeSelectionForeground, #ffffff);
+	--badge-bg: var(--vscode-badge-background, #4d4d4d);
+	--badge-fg: var(--vscode-badge-foreground, #cccccc);
+	--primary-btn-bg: var(--vscode-button-background, #0e639c);
+	--primary-btn-fg: var(--vscode-button-foreground, #ffffff);
+	--primary-btn-hover: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html, body {
+	height: 100%;
+	overflow: hidden;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--vscode-font-family, "Segoe UI", sans-serif);
+	font-size: var(--vscode-font-size, 13px);
+}
+
+#app {
+	display: flex;
+	height: 100vh;
+}
+
+/* ══════════════════════════════════════════
+   Sidebar (entry list)
+   ══════════════════════════════════════════ */
+
+#sidebar {
+	width: 280px;
+	min-width: 220px;
+	max-width: 400px;
+	display: flex;
+	flex-direction: column;
+	background: var(--sidebar-bg);
+	border-right: 1px solid var(--separator);
+	flex-shrink: 0;
+}
+
+#sidebarHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 10px;
+	border-bottom: 1px solid var(--separator);
+	background: var(--toolbar-bg);
+}
+
+#fileLabel {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--fg);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#addBtn {
+	background: var(--primary-btn-bg);
+	color: var(--primary-btn-fg);
+	border: none;
+	border-radius: 4px;
+	width: 26px;
+	height: 26px;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s;
+	flex-shrink: 0;
+}
+#addBtn:hover {
+	background: var(--primary-btn-hover);
+}
+
+#searchRow {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--separator);
+}
+#searchInput {
+	width: 100%;
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	outline: none;
+	font-family: var(--vscode-editor-font-family, monospace);
+}
+#searchInput:focus {
+	border-color: var(--accent);
+}
+#searchInput::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+
+/* Entry list */
+#entryList {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.entry-item {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 10px;
+	cursor: pointer;
+	border-bottom: 1px solid var(--separator);
+	transition: background 0.1s;
+}
+.entry-item:hover {
+	background: var(--list-hover);
+}
+.entry-item.selected {
+	background: var(--list-active);
+	color: var(--list-active-fg);
+}
+.entry-item.selected .entry-meta {
+	color: var(--list-active-fg);
+	opacity: 0.8;
+}
+
+.entry-key {
+	font-size: 13px;
+	font-weight: 600;
+	font-family: var(--vscode-editor-font-family, monospace);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.entry-title {
+	font-size: 12px;
+	color: var(--fg);
+	margin-top: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.entry-item.selected .entry-title {
+	color: var(--list-active-fg);
+}
+
+.entry-meta {
+	font-size: 11px;
+	color: var(--text-muted);
+	margin-top: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.entry-type-badge {
+	display: inline-block;
+	background: var(--badge-bg);
+	color: var(--badge-fg);
+	font-size: 10px;
+	padding: 1px 5px;
+	border-radius: 3px;
+	margin-right: 4px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	font-weight: 600;
+}
+.entry-item.selected .entry-type-badge {
+	background: rgba(255, 255, 255, 0.2);
+	color: var(--list-active-fg);
+}
+
+#entryCount {
+	padding: 4px 10px;
+	font-size: 11px;
+	color: var(--text-muted);
+	border-top: 1px solid var(--separator);
+	background: var(--toolbar-bg);
+	text-align: center;
+	flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   Detail panel
+   ══════════════════════════════════════════ */
+
+#detail {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 0;
+}
+
+#emptyState {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 14px;
+	padding: 24px;
+	text-align: center;
+}
+
+#entryForm {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+#entryForm.hidden {
+	display: none;
+}
+
+/* Form header */
+.form-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	flex-shrink: 0;
+	flex-wrap: wrap;
+}
+.form-header-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+/* Separate row for Save / Delete buttons */
+.form-actions-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	background: var(--toolbar-bg);
+	border-bottom: 1px solid var(--separator);
+	flex-shrink: 0;
+}
+
+.form-label {
+	font-size: 12px;
+	color: var(--btn-fg);
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+#entryTypeSelect {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 6px;
+	font-size: 12px;
+	outline: none;
+	cursor: pointer;
+	font-family: var(--vscode-editor-font-family, monospace);
+}
+#entryTypeSelect:focus {
+	border-color: var(--accent);
+}
+
+#citeKeyInput {
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 12px;
+	outline: none;
+	font-family: var(--vscode-editor-font-family, monospace);
+	flex: 1;
+	min-width: 120px;
+}
+#citeKeyInput:focus {
+	border-color: var(--accent);
+}
+#citeKeyInput::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+
+/* Buttons */
+.btn-primary {
+	background: var(--primary-btn-bg);
+	color: var(--primary-btn-fg);
+	border: none;
+	border-radius: 4px;
+	padding: 4px 14px;
+	font-size: 12px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background 0.15s;
+}
+.btn-primary:hover {
+	background: var(--primary-btn-hover);
+}
+
+.btn-danger {
+	background: var(--danger-bg);
+	color: var(--error-fg);
+	border: 1px solid var(--danger-border);
+	border-radius: 4px;
+	padding: 4px 12px;
+	font-size: 12px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background 0.15s;
+}
+.btn-danger:hover {
+	opacity: 0.85;
+}
+
+/* ══════════════════════════════════════════
+   Fields container
+   ══════════════════════════════════════════ */
+
+#fieldsContainer {
+	flex: 1;
+	overflow-y: auto;
+	padding: 8px 12px;
+}
+
+.field-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.field-name {
+	width: 100px;
+	min-width: 80px;
+	background: var(--input-bg);
+	color: var(--text-muted);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+	text-transform: lowercase;
+	cursor: default;
+}
+
+.field-value {
+	flex: 1;
+	min-width: 0;
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	outline: none;
+	resize: vertical;
+	min-height: 28px;
+	line-height: 1.4;
+}
+.field-value:focus {
+	border-color: var(--accent);
+}
+.field-value::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+
+.field-remove-btn {
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+	padding: 4px 4px;
+	border-radius: 4px;
+	transition: color 0.15s, background 0.15s;
+	flex-shrink: 0;
+}
+.field-remove-btn:hover {
+	color: var(--error-fg);
+	background: rgba(255, 255, 255, 0.06);
+}
+
+/* Add field row */
+#addFieldRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-top: 1px solid var(--separator);
+	background: var(--toolbar-bg);
+	flex-shrink: 0;
+}
+#newFieldName {
+	flex: 1;
+	background: var(--input-bg);
+	color: var(--input-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	outline: none;
+	font-family: var(--vscode-editor-font-family, monospace);
+}
+#newFieldName:focus {
+	border-color: var(--accent);
+}
+#newFieldName::placeholder {
+	color: var(--vscode-input-placeholderForeground, #888);
+}
+
+#addFieldBtn {
+	background: var(--btn-bg);
+	color: var(--btn-fg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 3px 10px;
+	font-size: 12px;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background 0.15s;
+}
+#addFieldBtn:hover {
+	background: var(--btn-hover);
+	border-color: var(--accent);
+}
+
+/* ══════════════════════════════════════════
+   Scrollbar
+   ══════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }

@@ -63,6 +63,11 @@ const config = {
 					from: "src/editors/figures/editor/*.{css,js}",
 					to: "figure_editor/[name][ext]",
 				},
+				// BibTeX editor assets
+				{
+					from: "src/editors/bibtex/editor/*.{css,js}",
+					to: "bibtex_editor/[name][ext]",
+				},
 				// KaTeX CSS + JS + fonts for equation editor
 				{
 					from: "node_modules/katex/dist/katex.min.css",

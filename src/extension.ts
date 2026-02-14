@@ -6,6 +6,7 @@ import { TexlabClient } from "./latex/lsp/texlabClient";
 import { EquationEditor } from "./editors/equation/EquationEditor";
 import { TableEditor } from "./editors/tables/TableEditor";
 import { FigureEditor } from "./editors/figures/FigureEditor";
+import { BibtexEditor } from "./editors/bibtex/BibtexEditor";
 import { Config } from "./utils/Config";
 import { Logger } from "./utils/Logger";
 
@@ -65,6 +66,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the Figure Editor
 	// =====================================
 	FigureEditor.register(context);
+
+	// =====================================
+	// Register the BibTeX Editor
+	// =====================================
+	BibtexEditor.register(context);
 
 	// =====================================
 	// Initialize texlab LSP
