@@ -143,6 +143,13 @@
 				"description": "Open the visual editor for managing BibTeX entries",
 				"category": "Intex",
 				"enablement": "editorLangId == bibtex"
+			},
+			{
+				"command": "intex.formatDocument",
+				"title": "Format Document",
+				"description": "Format the active LaTeX or BibTeX document using the configured formatter via texlab",
+				"category": "Intex",
+				"enablement": "(editorLangId == latex || editorLangId == bibtex) && config.intex.lsp.enabled"
 			}
 		],
 		"menus": {},
@@ -229,6 +236,35 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Enable LaTeX language server (texlab) for auto-completion and navigation"
+				},
+				"intex.formatting.latexFormatter": {
+					"type": "string",
+					"enum": ["none", "tex-fmt", "latexindent"],
+					"enumDescriptions": [
+						"Disable LaTeX formatting",
+						"Use tex-fmt (must be installed and available in PATH)",
+						"Use latexindent (requires Perl)"
+					],
+					"default": "tex-fmt",
+					"description": "Formatter to use for LaTeX documents via texlab. Set 'editor.defaultFormatter' to 'PolarHuskyDev.intex' and 'editor.formatOnSave' to true in your [latex] language settings to enable format-on-save."
+				},
+				"intex.formatting.bibtexFormatter": {
+					"type": "string",
+					"enum": ["none", "texlab", "tex-fmt", "latexindent"],
+					"enumDescriptions": [
+						"Disable BibTeX formatting",
+						"Use texlab's built-in BibTeX formatter",
+						"Use tex-fmt (must be installed and available in PATH)",
+						"Use latexindent (requires Perl)"
+					],
+					"default": "texlab",
+					"description": "Formatter to use for BibTeX documents via texlab."
+				},
+				"intex.formatting.lineLength": {
+					"type": "integer",
+					"default": 80,
+					"minimum": -1,
+					"description": "Maximum line length for the formatter. Set to -1 for no limit."
 				}
 			}
 		},

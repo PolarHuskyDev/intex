@@ -4,20 +4,24 @@ import {
 	LanguageClientOptions,
 	ServerOptions,
 	Executable,
+	DocumentFormattingRequest,
+	DocumentFormattingParams,
 } from "vscode-languageclient/node";
 import { Logger } from "../../utils/logger";
 import { TexlabManager } from "./texlabManager";
 import { TexlabInstaller } from "./texlabInstaller";
+
+import { Config } from "../../utils/config";
 
 export class TexlabClient {
 	private client: LanguageClient | null = null;
 	private manager: TexlabManager;
 	private installer: TexlabInstaller;
 	private logger = Logger.instance;
+	private context: vscode.ExtensionContext;
 
-	constructor(
-		context: vscode.ExtensionContext,
-	) {
+	constructor(context: vscode.ExtensionContext) {
+		this.context = context;
 		this.manager = new TexlabManager(context);
 		this.installer = new TexlabInstaller(context);
 	}
@@ -27,6 +31,81 @@ export class TexlabClient {
 	 * Installs if needed, and starts the client.
 	 */
 	async initialize(): Promise<void> {
+		this.registerCommands();
+		this.registerConfigurationWatcher();
+
+		if (Config.instance.lspEnabled) {
+			await this.startLsp();
+		} else {
+			this.logger.info("texlab LSP disabled by configuration");
+		}
+	}
+
+	private registerCommands(): void {
+		this.context.subscriptions.push(
+			vscode.commands.registerCommand("intex.formatDocument", async () => {
+				const editor = vscode.window.activeTextEditor;
+				if (!editor) return;
+
+				if (!this.isActive()) {
+					this.logger.warn("texlab is not running, cannot format document");
+					vscode.window.showWarningMessage(
+						"InTeX: texlab is not running. Enable the LSP (intex.lsp.enabled) to use formatting.",
+					);
+					return;
+				}
+
+				this.logger.info(`Formatting document: ${editor.document.uri.toString()}`);
+				const edits = await this.formatDocument(editor.document, {
+					tabSize: editor.options.tabSize as number,
+					insertSpaces: editor.options.insertSpaces as boolean,
+				});
+
+				if (edits.length > 0) {
+					const wsEdit = new vscode.WorkspaceEdit();
+					wsEdit.set(editor.document.uri, edits);
+					await vscode.workspace.applyEdit(wsEdit);
+					this.logger.info(`Document formatted: ${editor.document.uri.toString()}, edits applied: ${edits.length}`);
+				} else {
+					this.logger.info(`Document formatted: ${editor.document.uri.toString()}, no edits needed`);
+				}
+			}),
+		);
+	}
+
+	private registerConfigurationWatcher(): void {
+		this.context.subscriptions.push(
+			vscode.workspace.onDidChangeConfiguration(async (e) => {
+				Config.instance.refresh();
+
+				if (e.affectsConfiguration("intex.lsp.enabled")) {
+					if (Config.instance.lspEnabled) {
+						this.logger.info("texlab LSP enabled, starting...");
+						await this.startLsp();
+					} else {
+						this.logger.info("texlab LSP disabled, stopping...");
+						await this.stop();
+					}
+				}
+
+				const formatterChanged =
+					e.affectsConfiguration("intex.formatting.latexFormatter") ||
+					e.affectsConfiguration("intex.formatting.bibtexFormatter") ||
+					e.affectsConfiguration("intex.formatting.lineLength");
+
+				if (formatterChanged && this.client) {
+					this.logger.info("Formatter settings changed, restarting texlab...");
+					await this.stop();
+					if (Config.instance.lspEnabled) {
+						await this.startLsp();
+					}
+				}
+			}),
+		);
+	}
+
+	private async startLsp(): Promise<void> {
+		if (this.client) return;
 		try {
 			if (await this.installer.isInstalled()) {
 				await this.start();
@@ -36,7 +115,7 @@ export class TexlabClient {
 				this.installer.promptInstallIfNeeded();
 			}
 		} catch (error) {
-			this.logger.error(`Failed to initialize texlab LSP: ${error}`);
+			this.logger.error(`Failed to start texlab LSP: ${error}`);
 		}
 	}
 
@@ -84,6 +163,9 @@ export class TexlabClient {
 						onEdit: false,
 						onOpenAndSave: false,
 					},
+					latexFormatter: Config.instance.formattingLatexFormatter,
+					bibtexFormatter: Config.instance.formattingBibtexFormatter,
+					formatterLineLength: Config.instance.formattingLineLength,
 				},
 				outputChannel: this.logger.channel,
 			};
@@ -118,5 +200,34 @@ export class TexlabClient {
 
 	isActive(): boolean {
 		return this.client !== null;
+	}
+
+	async formatDocument(
+		document: vscode.TextDocument,
+		options: vscode.FormattingOptions,
+	): Promise<vscode.TextEdit[]> {
+		if (!this.client) {
+			this.logger.warn("texlab is not running, cannot format document");
+			return [];
+		}
+
+		try {
+			const params: DocumentFormattingParams = {
+				textDocument: { uri: document.uri.toString() },
+				options: {
+					tabSize: options.tabSize,
+					insertSpaces: options.insertSpaces,
+				},
+			};
+			const edits = await this.client.sendRequest(
+				DocumentFormattingRequest.type,
+				params,
+			);
+			if (!edits) return [];
+			return this.client.protocol2CodeConverter.asTextEdits(edits);
+		} catch (error) {
+			this.logger.error(`Format document failed: ${error}`);
+			return [];
+		}
 	}
 }

@@ -126,13 +126,22 @@ docker volume rm intex-texlive-cache
 - Add JSDoc comments for public APIs
 - Keep functions small and focused
 
-## Release Process (Future)
+## Release Process
+
+Releases are automated via the CI/CD pipeline (`.github/workflows/cicd.yml`). Pushing a `v*` tag triggers the full release flow:
 
 1. Update version in `package.json`
-2. Update CHANGELOG.md
-3. Run `npm run package` to create VSIX
-4. Test VSIX installation
-5. Publish to marketplace
+2. Commit and push to `main`
+3. Push a version tag:
+   ```bash
+   git tag v1.x.x
+   git push origin v1.x.x
+   ```
+4. The pipeline will:
+   - Build and package the `.vsix`
+   - Create a GitHub Release with the `.vsix` attached
+   - Publish to the VS Code Marketplace (requires `VSCE_PAT` secret)
+   - Publish to the Open VSX Registry (requires `OPENVSX_TOKEN` secret)
 
 ## Resources
 
