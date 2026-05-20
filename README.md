@@ -37,6 +37,18 @@ InTeX works out of the box, but you can customize it:
 - `intex.outputDirectory`: Choose a directory for output files.
 - `intex.latexmk.options`: Customize build arguments.
 - `intex.lsp.enabled`: Enable or disable LSP (language server protocol) server whenever you want.
+- `intex.formatting.latexFormatter`: Formatter for `.tex` files — `tex-fmt` (default), `latexindent`, or `none`.
+- `intex.formatting.bibtexFormatter`: Formatter for `.bib` files — `texlab` (default), `tex-fmt`, `latexindent`, or `none`.
+- `intex.formatting.lineLength`: Maximum line length used by the formatter (default: `80`, `-1` for no limit).
+
+To enable format-on-save, add to your VS Code settings:
+```jsonc
+"[latex]": {
+  "editor.defaultFormatter": "PolarHuskyDev.intex",
+  "editor.formatOnSave": true
+}
+```
+Formatting requires `intex.lsp.enabled` to be `true` and the chosen formatter to be installed and available in `PATH` (e.g. [`tex-fmt`](https://github.com/WGUNDERWOOD/tex-fmt)).
 
 ## Gallery
 
