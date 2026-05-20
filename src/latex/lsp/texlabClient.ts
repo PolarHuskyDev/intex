@@ -32,22 +32,12 @@ export class TexlabClient {
 	 */
 	async initialize(): Promise<void> {
 		this.registerCommands();
+		this.registerConfigurationWatcher();
 
-		if (!Config.instance.lspEnabled) {
+		if (Config.instance.lspEnabled) {
+			await this.startLsp();
+		} else {
 			this.logger.info("texlab LSP disabled by configuration");
-			return;
-		}
-
-		try {
-			if (await this.installer.isInstalled()) {
-				await this.start();
-				this.logger.info("texlab LSP client started");
-			} else {
-				// Prompt to install in the background (non-blocking)
-				this.installer.promptInstallIfNeeded();
-			}
-		} catch (error) {
-			this.logger.error(`Failed to initialize texlab LSP: ${error}`);
 		}
 	}
 
@@ -81,6 +71,52 @@ export class TexlabClient {
 				}
 			}),
 		);
+	}
+
+	private registerConfigurationWatcher(): void {
+		this.context.subscriptions.push(
+			vscode.workspace.onDidChangeConfiguration(async (e) => {
+				Config.instance.refresh();
+
+				if (e.affectsConfiguration("intex.lsp.enabled")) {
+					if (Config.instance.lspEnabled) {
+						this.logger.info("texlab LSP enabled, starting...");
+						await this.startLsp();
+					} else {
+						this.logger.info("texlab LSP disabled, stopping...");
+						await this.stop();
+					}
+				}
+
+				const formatterChanged =
+					e.affectsConfiguration("intex.formatting.latexFormatter") ||
+					e.affectsConfiguration("intex.formatting.bibtexFormatter") ||
+					e.affectsConfiguration("intex.formatting.lineLength");
+
+				if (formatterChanged && this.client) {
+					this.logger.info("Formatter settings changed, restarting texlab...");
+					await this.stop();
+					if (Config.instance.lspEnabled) {
+						await this.startLsp();
+					}
+				}
+			}),
+		);
+	}
+
+	private async startLsp(): Promise<void> {
+		if (this.client) return;
+		try {
+			if (await this.installer.isInstalled()) {
+				await this.start();
+				this.logger.info("texlab LSP client started");
+			} else {
+				// Prompt to install in the background (non-blocking)
+				this.installer.promptInstallIfNeeded();
+			}
+		} catch (error) {
+			this.logger.error(`Failed to start texlab LSP: ${error}`);
+		}
 	}
 
 	private async start(): Promise<void> {

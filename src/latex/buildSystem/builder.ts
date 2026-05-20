@@ -205,10 +205,22 @@ export class BuildSystem {
 		try {
 			await this.initialize();
 			this.registerCommands();
+			this.registerConfigurationWatcher();
 		} catch (error) {
 			this.logger.error(`Failed to initialize build system: ${error}`);
 			vscode.window.showErrorMessage(`InTeX: Failed to initialize build system. ${error}`);
 		}
+	}
+
+	private registerConfigurationWatcher(): void {
+		this.context.subscriptions.push(
+			vscode.workspace.onDidChangeConfiguration(async (e) => {
+				if (!e.affectsConfiguration("intex.buildMethod")) return;
+				Config.instance.refresh();
+				this.logger.info("Build method changed, re-initializing build system...");
+				await this.initialize();
+			}),
+		);
 	}
 	
 	async deactivate(): Promise<void> {
