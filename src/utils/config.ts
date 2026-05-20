@@ -71,6 +71,18 @@ export class Config {
 		return this.config.get<boolean>("lsp.enabled", true);
 	}
 
+	get formattingLatexFormatter(): "none" | "tex-fmt" | "latexindent" {
+		return this.config.get<"none" | "tex-fmt" | "latexindent">("formatting.latexFormatter", "tex-fmt");
+	}
+
+	get formattingBibtexFormatter(): "none" | "texlab" | "tex-fmt" | "latexindent" {
+		return this.config.get<"none" | "texlab" | "tex-fmt" | "latexindent">("formatting.bibtexFormatter", "texlab");
+	}
+
+	get formattingLineLength(): number {
+		return this.config.get<number>("formatting.lineLength", 80);
+	}
+
 	// Generic get method
 	// getValue<T>(key: string): T | undefined;
 	// getValue<T>(key: string, defaultValue: T): T;
