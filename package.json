@@ -149,7 +149,7 @@
 				"title": "Format Document",
 				"description": "Format the active LaTeX or BibTeX document using the configured formatter via texlab",
 				"category": "Intex",
-				"enablement": "editorLangId == latex || editorLangId == bibtex"
+				"enablement": "(editorLangId == latex || editorLangId == bibtex) && config.intex.lsp.enabled"
 			}
 		],
 		"menus": {},

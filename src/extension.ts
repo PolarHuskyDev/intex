@@ -75,10 +75,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	// =====================================
 	// Initialize texlab LSP
 	// =====================================
-	if (Config.instance.lspEnabled) {
-		texlabClient = new TexlabClient(context);
-		await texlabClient.initialize();
-	}
+	texlabClient = new TexlabClient(context);
+	await texlabClient.initialize();
 
 	logger.info("InTeX extension activated successfully");
 }

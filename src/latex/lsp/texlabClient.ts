@@ -31,6 +31,13 @@ export class TexlabClient {
 	 * Installs if needed, and starts the client.
 	 */
 	async initialize(): Promise<void> {
+		this.registerCommands();
+
+		if (!Config.instance.lspEnabled) {
+			this.logger.info("texlab LSP disabled by configuration");
+			return;
+		}
+
 		try {
 			if (await this.installer.isInstalled()) {
 				await this.start();
@@ -42,7 +49,9 @@ export class TexlabClient {
 		} catch (error) {
 			this.logger.error(`Failed to initialize texlab LSP: ${error}`);
 		}
+	}
 
+	private registerCommands(): void {
 		this.context.subscriptions.push(
 			vscode.commands.registerCommand("intex.formatDocument", async () => {
 				const editor = vscode.window.activeTextEditor;
