@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as os from "os";
 
 export class Config {
 	private static _instance: Config;
@@ -33,6 +34,28 @@ export class Config {
 
 	get dockerEnableCache(): boolean {
 		return this.config.get<boolean>("docker.enableCache", true);
+	}
+
+	get dockerSelinuxLabel(): "none" | "shared" | "private" {
+		return this.config.get<"none" | "shared" | "private">(
+			"docker.selinuxLabel",
+			"none",
+		);
+	}
+
+	get dockerVolumeLabel(): "" | ":z" | ":Z" {
+		if (os.platform() !== "linux") {
+			return "";
+		}
+
+		switch (this.dockerSelinuxLabel) {
+			case "shared":
+				return ":z";
+			case "private":
+				return ":Z";
+			default:
+				return "";
+		}
 	}
 
 	get buildOnSave(): boolean {

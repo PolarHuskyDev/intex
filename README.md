@@ -34,6 +34,7 @@ InTeX works out of the box, but you can customize it:
 
 - `intex.buildMethod`: Choose `auto`, `local`, or `docker`.
 - `intex.docker.image`: Customize the docker image used to build the documents with containers.
+- `intex.docker.selinuxLabel`: Set to `shared` (`:z`) or `private` (`:Z`) for Docker bind mounts on Linux systems with SELinux enforcing. Defaults to `none`.
 - `intex.outputDirectory`: Choose a directory for output files.
 - `intex.latexmk.options`: Customize build arguments.
 - `intex.lsp.enabled`: Enable or disable LSP (language server protocol) server whenever you want.
