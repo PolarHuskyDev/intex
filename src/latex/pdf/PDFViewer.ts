@@ -101,6 +101,16 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 	): void {
 		const webview = webviewPanel.webview;
 		const key = document.uri.fsPath;
+		const createdAt = Date.now();
+		this.logger.info(`PDF viewer resolve started for ${key}`);
+		// Start reading the document while the webview and pdf.js initialize.
+		// Waiting for the "ready" message before starting this read adds a
+		// serialized host/webview round trip to every first open.
+		const initialPdfData = vscode.workspace.fs.readFile(document.uri);
+		initialPdfData.then(
+			(data) => this.logger.info(`PDF file read completed for ${key} (${data.byteLength} bytes, +${Date.now() - createdAt} ms)`),
+			(error) => this.logger.error(`PDF file read failed for ${key} (+${Date.now() - createdAt} ms): ${error}`),
+		);
 
 		// Directories with viewer assets
 		const viewerDir = vscode.Uri.joinPath(this.extensionUri, "dist", "pdf_viewer");
@@ -124,12 +134,15 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 
 		// Listen for webview messages
 		webview.onDidReceiveMessage(async (message) => {
-			if (message.type === "ready") {
+			if (message.type === "debug") {
+				this.logger.info(`PDF viewer [${key}] ${message.message}`);
+			} else if (message.type === "ready") {
+				this.logger.info(`PDF viewer ready received for ${key} (+${Date.now() - createdAt} ms)`);
 				try {
-					const pdfData = await vscode.workspace.fs.readFile(document.uri);
+					const pdfData = await initialPdfData;
 					const base64 = Buffer.from(pdfData).toString("base64");
 					webview.postMessage({ type: "loadPdf", data: base64 });
-					this.logger.info(`Sent ${pdfData.byteLength} bytes to PDF viewer`);
+					this.logger.info(`Sent ${pdfData.byteLength} bytes to PDF viewer (+${Date.now() - createdAt} ms)`);
 				} catch (e) {
 					this.logger.error(`Failed to read PDF file: ${e}`);
 				}
@@ -159,7 +172,7 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 		});
 
 		webview.html = this.buildHTML(nonce, webview.cspSource, cssUri, jsUri, pdfjsUri, pdfjsWorkerUri);
-		this.logger.info(`PDF Viewer webview created for ${key}`);
+		this.logger.info(`PDF Viewer webview HTML assigned for ${key} (+${Date.now() - createdAt} ms)`);
 	}
 
 	// ------------------------------------------------------------------
@@ -187,6 +200,8 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 			worker-src ${cspSource} blob:;
 			font-src ${cspSource};">
 	<link rel="stylesheet" href="${cssUri}">
+	<link rel="modulepreload" href="${pdfjsUri}">
+	<link rel="modulepreload" href="${pdfjsWorkerUri}">
 </head>
 <body>
 	<div id="app">
