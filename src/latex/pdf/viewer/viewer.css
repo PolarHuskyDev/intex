@@ -198,7 +198,9 @@ html, body {
 #pagesContainer {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: flex-start;
+	min-width: 100%;
+	box-sizing: border-box;
 	padding: 16px 20px;
 	gap: 12px;
 }
@@ -206,6 +208,7 @@ html, body {
 /* ---- Per-page wrapper ---- */
 .page-wrapper {
 	position: relative;
+	margin-inline: auto;
 	background: white;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 	overflow: hidden;
