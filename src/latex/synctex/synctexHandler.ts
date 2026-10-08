@@ -386,8 +386,8 @@ export class SyncTexHandler {
 				const dockerImage = this.config.dockerImage;
 				command =
 					`docker run --rm` +
-					` -v "${workspaceRoot}:/workspace"` +
-					` -v "${outputDir}:/output"` +
+					` -v "${workspaceRoot}:/workspace${this.config.dockerVolumeLabel}"` +
+					` -v "${outputDir}:/output${this.config.dockerVolumeLabel}"` +
 					` -w /workspace ${dockerImage} ${baseCommand}`;
 			} else {
 				command = baseCommand;

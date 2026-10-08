@@ -3,7 +3,7 @@
 	"icon": "logo.png",
 	"displayName": "∫TeX - Modern LaTeX Editor",
 	"description": "∫TeX is a modern, local-first LaTeX extension for VS Code, offering fast builds, integrated PDF preview, SyncTeX, and smart tooling powered by texlab LSP server.",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"publisher": "PolarHuskyDev",
 	"license": "MIT",
 	"repository": {
@@ -180,6 +180,21 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Cache LaTeX packages in a Docker volume for faster builds"
+				},
+				"intex.docker.selinuxLabel": {
+					"type": "string",
+					"enum": [
+						"none",
+						"shared",
+						"private"
+					],
+					"enumDescriptions": [
+						"Do not apply an SELinux label",
+						"Apply a shared SELinux label (:z)",
+						"Apply a private SELinux label (:Z)"
+					],
+					"default": "none",
+					"description": "SELinux labeling mode for Docker bind mounts. Use 'shared' or 'private' on Linux systems with SELinux enforcing."
 				},
 				"intex.buildOnSave": {
 					"type": "boolean",

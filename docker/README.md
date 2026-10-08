@@ -62,6 +62,12 @@ sudo usermod -aG docker $USER
 # Log out and back in for changes to take effect
 ```
 
+On Linux systems with SELinux enforcing, bind mounts may also need an SELinux
+label. Set `"intex.docker.selinuxLabel": "shared"` to use Docker's `:z` label,
+or `"private"` to use `:Z`. The default is `"none"`. Prefer `shared` when a
+path may be used by more than one container; `private` gives the mount an
+exclusive label.
+
 ### Image Pull Issues
 
 ```bash

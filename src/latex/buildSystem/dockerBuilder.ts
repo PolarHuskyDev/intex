@@ -64,8 +64,8 @@ export class DockerBuilder implements IBuilder {
 
 			// Build Docker command with volume mounts
 			const volumeMounts = [
-				`-v "${docDir}:/workspace"`,
-				`-v "${outputDir}:${outputDirInContainer}"`,
+				`-v "${docDir}:/workspace${this.config.dockerVolumeLabel}"`,
+				`-v "${outputDir}:${outputDirInContainer}${this.config.dockerVolumeLabel}"`,
 				this.config.dockerEnableCache
 					? `-v ${this.volumeName}:/usr/local/texlive`
 					: "",
