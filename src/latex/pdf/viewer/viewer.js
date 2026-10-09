@@ -5,13 +5,30 @@
 
 (async function () {
 	"use strict";
-
-	// ---- Load pdf.js (ES module) ----
-	const pdfjsLib = await import(window.__PDFJS_URL__);
-	pdfjsLib.GlobalWorkerOptions.workerSrc = window.__PDFJS_WORKER_URL__;
-
 	// ---- VS Code API ----
 	const vscode = acquireVsCodeApi();
+	const startupAt = performance.now();
+	const trace = (message) => vscode.postMessage({
+		type: "debug",
+		message: `${message} (+${Math.round(performance.now() - startupAt)} ms)`,
+	});
+	trace("script started");
+
+	// ---- Load pdf.js (ES module) ----
+	let pdfjsLib;
+	trace("pdf.js import started");
+	const pdfjsReady = import(window.__PDFJS_URL__).then((lib) => {
+		pdfjsLib = lib;
+		pdfjsLib.GlobalWorkerOptions.workerSrc = window.__PDFJS_WORKER_URL__;
+		trace("pdf.js import completed");
+	});
+	// VS Code webviews can delay module workers while resolving their
+	// resource URI. Loading the worker module in the webview lets pdf.js use
+	// its built-in loopback worker instead of waiting for that worker startup.
+	const pdfjsWorkerReady = import(window.__PDFJS_WORKER_URL__).then((workerLib) => {
+		globalThis.pdfjsWorker = workerLib;
+		trace("pdf.js worker module imported");
+	});
 
 	// ---- DOM refs ----
 	const prevBtn        = document.getElementById("prevBtn");
@@ -36,6 +53,10 @@
 	const pagesContainer = document.getElementById("pagesContainer");
 	const sidebar        = document.getElementById("sidebar");
 	const loadingOverlay = document.getElementById("loadingOverlay");
+	const pdfContextMenu = document.getElementById("pdfContextMenu");
+	const copySelectionBtn = document.getElementById("copySelectionBtn");
+	const selectAllTextBtn = document.getElementById("selectAllTextBtn");
+	const searchSelectionBtn = document.getElementById("searchSelectionBtn");
 
 	// ---- State ----
 	let pdfDoc      = null;
@@ -163,6 +184,20 @@
 	// Track current page by scroll position
 	mainView.addEventListener("scroll", debounce(updateCurrentPageFromScroll, 80));
 
+	// Text selection context menu
+	pagesContainer.addEventListener("contextmenu", (event) => {
+		event.preventDefault();
+		showContextMenu(event.clientX, event.clientY);
+	});
+	document.addEventListener("mousedown", (event) => {
+		if (!pdfContextMenu.contains(event.target)) hideContextMenu();
+	});
+	copySelectionBtn.addEventListener("click", () => {
+		void copySelection();
+	});
+	selectAllTextBtn.addEventListener("click", selectAllText);
+	searchSelectionBtn.addEventListener("click", searchSelection);
+
 	// ---- SyncTeX inverse search: double-click or Ctrl+Click on PDF ----
 	pagesContainer.addEventListener("dblclick", (e) => {
 		handleSynctexClick(e);
@@ -197,6 +232,70 @@
 			x: pdfPt[0],
 			y: pdfPt[1],
 		});
+	}
+
+	function getSelectedText() {
+		return window.getSelection()?.toString().trim() ?? "";
+	}
+
+	function showContextMenu(x, y) {
+		const hasSelection = getSelectedText().length > 0;
+		copySelectionBtn.disabled = !hasSelection;
+		searchSelectionBtn.disabled = !hasSelection;
+		pdfContextMenu.hidden = false;
+
+		const menuWidth = pdfContextMenu.offsetWidth;
+		const menuHeight = pdfContextMenu.offsetHeight;
+		pdfContextMenu.style.left = `${Math.min(x, window.innerWidth - menuWidth - 8)}px`;
+		pdfContextMenu.style.top = `${Math.min(y, window.innerHeight - menuHeight - 8)}px`;
+	}
+
+	function hideContextMenu() {
+		pdfContextMenu.hidden = true;
+	}
+
+	async function copySelection() {
+		const text = getSelectedText();
+		if (!text) return;
+
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch (error) {
+			const textArea = document.createElement("textarea");
+			textArea.value = text;
+			textArea.style.position = "fixed";
+			textArea.style.opacity = "0";
+			document.body.appendChild(textArea);
+			textArea.select();
+			const copied = document.execCommand("copy");
+			textArea.remove();
+			if (!copied) {
+				console.error("Failed to copy selected PDF text:", error);
+				return;
+			}
+		}
+		hideContextMenu();
+	}
+
+	function selectAllText() {
+		const selection = window.getSelection();
+		if (!selection) return;
+		selection.removeAllRanges();
+		const range = document.createRange();
+		range.selectNodeContents(pagesContainer);
+		selection.addRange(range);
+		hideContextMenu();
+	}
+
+	function searchSelection() {
+		const text = getSelectedText();
+		if (!text) return;
+		searchBar.classList.remove("hidden");
+		searchInput.value = text;
+		searchInput.focus();
+		searchInput.select();
+		runSearch();
+		hideContextMenu();
 	}
 
 	/** Invert the viewport transform to get PDF coordinates from pixel coords. */
@@ -276,6 +375,7 @@
 	// ============================================================
 
 	async function buildPageShells() {
+		trace("page shell build started");
 		pagesContainer.innerHTML = "";
 		pageWrappers.length = 0;
 		pageCanvases.length = 0;
@@ -288,8 +388,14 @@
 		// Disconnect old observer
 		if (pageObserver) pageObserver.disconnect();
 
+		// Fetch page metadata in parallel. Calling getPage() sequentially makes
+		// opening a new viewer wait for every page before the first page appears.
+		const pages = await Promise.all(
+			Array.from({ length: pageCount }, (_, index) => pdfDoc.getPage(index + 1)),
+		);
+
 		for (let i = 1; i <= pageCount; i++) {
-			const page = await pdfDoc.getPage(i);
+			const page = pages[i - 1];
 			const baseVP = page.getViewport({ scale: 1.0 });
 			const effectiveZoom = computeZoom(baseVP);
 			if (i === 1) zoom = effectiveZoom; // sync global zoom on first
@@ -342,12 +448,14 @@
 		}, { root: mainView, rootMargin: "200px 0px" });
 
 		pageWrappers.forEach((w) => pageObserver.observe(w));
+		trace(`page shell build completed (${pageCount} pages)`);
 	}
 
 	async function renderPage(pageNum) {
 		const idx = pageNum - 1;
 		if (pageRendered[idx]) return;
 		pageRendered[idx] = true;
+		if (pageNum === 1) trace("first page render started");
 
 		try {
 			const page = await pdfDoc.getPage(pageNum);
@@ -386,6 +494,7 @@
 			textDiv.style.width = cssW + "px";
 			textDiv.style.height = cssH + "px";
 			textDiv.style.setProperty("--scale-factor", effectiveZoom);
+			textDiv.style.setProperty("--total-scale-factor", effectiveZoom);
 
 			const textLayer = new pdfjsLib.TextLayer({
 				textContentSource: textContent,
@@ -403,6 +512,7 @@
 			const annotations = await page.getAnnotations();
 			renderAnnotations(annotations, annotDiv, textVP, page);
 			highlightAllSearchResults();
+			if (pageNum === 1) trace("first page render completed");
 
 		} catch (err) {
 			console.error("Render error page " + pageNum, err);
@@ -798,13 +908,17 @@
 
 	async function loadPDF(pdfData, preservePage = null, isReload = false) {
 		try {
+			trace(`loadPdf handling started (${pdfData.byteLength} bytes)`);
 			loadingOverlay.classList.remove("hidden");
+			await Promise.all([pdfjsReady, pdfjsWorkerReady]);
+			trace("pdf.js ready for document");
 
 			// Preserve scroll position for reload
 			const previousScrollTop = isReload ? mainView.scrollTop : null;
 
 			pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
 			pageCount = pdfDoc.numPages;
+			trace(`pdf.js document loaded (${pageCount} pages)`);
 			
 			// If a specific page was requested, use it; otherwise preserve current page if valid
 			if (preservePage !== null && preservePage >= 1 && preservePage <= pageCount) {
@@ -825,6 +939,7 @@
 			}
 
 			loadingOverlay.classList.add("hidden");
+			trace("loading overlay hidden");
 		} catch (err) {
 			console.error("PDF load error:", err);
 			loadingOverlay.textContent = "Failed to load PDF: " + err.message;
@@ -839,6 +954,7 @@
 		const msg = event.data;
 		switch (msg.type) {
 			case "loadPdf": {
+				trace("loadPdf message received");
 				const bin = atob(msg.data);
 				const bytes = new Uint8Array(bin.length);
 				for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -898,5 +1014,6 @@
 	}
 
 	// Signal ready
+	trace("ready message sent");
 	vscode.postMessage({ type: "ready" });
 })();

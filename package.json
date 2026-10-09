@@ -254,7 +254,11 @@
 				},
 				"intex.formatting.latexFormatter": {
 					"type": "string",
-					"enum": ["none", "tex-fmt", "latexindent"],
+					"enum": [
+						"none",
+						"tex-fmt",
+						"latexindent"
+					],
 					"enumDescriptions": [
 						"Disable LaTeX formatting",
 						"Use tex-fmt (must be installed and available in PATH)",
@@ -265,7 +269,12 @@
 				},
 				"intex.formatting.bibtexFormatter": {
 					"type": "string",
-					"enum": ["none", "texlab", "tex-fmt", "latexindent"],
+					"enum": [
+						"none",
+						"texlab",
+						"tex-fmt",
+						"latexindent"
+					],
 					"enumDescriptions": [
 						"Disable BibTeX formatting",
 						"Use texlab's built-in BibTeX formatter",
@@ -324,8 +333,8 @@
 		"@typescript-eslint/eslint-plugin": "^8.54.0",
 		"@typescript-eslint/parser": "^8.54.0",
 		"@vscode/test-electron": "^2.3.8",
-		"@vscode/vsce": "^3.7.1",
-		"copy-webpack-plugin": "^13.0.1",
+		"@vscode/vsce": "^4.0.0",
+		"copy-webpack-plugin": "^14.0.0",
 		"eslint": "^9.39.2",
 		"ovsx": "^0.10.8",
 		"prettier": "^3.8.1",
@@ -335,13 +344,13 @@
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
-		"adm-zip": "^0.5.16",
+		"adm-zip": "^0.6.1",
 		"html2canvas": "^1.4.1",
 		"jimp": "^1.6.0",
+		"katex": "^0.19.0",
 		"mathjax": "^4.1.0",
 		"pdfjs-dist": "^5.4.624",
-		"sharp": "^0.34.5",
-		"katex": "^0.16.21",
+		"sharp": "^0.35.5",
 		"vscode-languageclient": "^9.0.1"
 	}
 }
