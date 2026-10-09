@@ -281,6 +281,11 @@ export class PDFViewer implements vscode.CustomReadonlyEditorProvider {
 	</div>
 
 	<div id="loadingOverlay">Loading PDF...</div>
+	<div id="pdfContextMenu" role="menu" hidden>
+		<button id="copySelectionBtn" role="menuitem">Copy</button>
+		<button id="selectAllTextBtn" role="menuitem">Select all text</button>
+		<button id="searchSelectionBtn" role="menuitem">Search selection</button>
+	</div>
 
 	<!-- Config for viewer.js -->
 	<script nonce="${nonce}">

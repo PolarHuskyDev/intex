@@ -53,6 +53,10 @@
 	const pagesContainer = document.getElementById("pagesContainer");
 	const sidebar        = document.getElementById("sidebar");
 	const loadingOverlay = document.getElementById("loadingOverlay");
+	const pdfContextMenu = document.getElementById("pdfContextMenu");
+	const copySelectionBtn = document.getElementById("copySelectionBtn");
+	const selectAllTextBtn = document.getElementById("selectAllTextBtn");
+	const searchSelectionBtn = document.getElementById("searchSelectionBtn");
 
 	// ---- State ----
 	let pdfDoc      = null;
@@ -180,6 +184,20 @@
 	// Track current page by scroll position
 	mainView.addEventListener("scroll", debounce(updateCurrentPageFromScroll, 80));
 
+	// Text selection context menu
+	pagesContainer.addEventListener("contextmenu", (event) => {
+		event.preventDefault();
+		showContextMenu(event.clientX, event.clientY);
+	});
+	document.addEventListener("mousedown", (event) => {
+		if (!pdfContextMenu.contains(event.target)) hideContextMenu();
+	});
+	copySelectionBtn.addEventListener("click", () => {
+		void copySelection();
+	});
+	selectAllTextBtn.addEventListener("click", selectAllText);
+	searchSelectionBtn.addEventListener("click", searchSelection);
+
 	// ---- SyncTeX inverse search: double-click or Ctrl+Click on PDF ----
 	pagesContainer.addEventListener("dblclick", (e) => {
 		handleSynctexClick(e);
@@ -214,6 +232,70 @@
 			x: pdfPt[0],
 			y: pdfPt[1],
 		});
+	}
+
+	function getSelectedText() {
+		return window.getSelection()?.toString().trim() ?? "";
+	}
+
+	function showContextMenu(x, y) {
+		const hasSelection = getSelectedText().length > 0;
+		copySelectionBtn.disabled = !hasSelection;
+		searchSelectionBtn.disabled = !hasSelection;
+		pdfContextMenu.hidden = false;
+
+		const menuWidth = pdfContextMenu.offsetWidth;
+		const menuHeight = pdfContextMenu.offsetHeight;
+		pdfContextMenu.style.left = `${Math.min(x, window.innerWidth - menuWidth - 8)}px`;
+		pdfContextMenu.style.top = `${Math.min(y, window.innerHeight - menuHeight - 8)}px`;
+	}
+
+	function hideContextMenu() {
+		pdfContextMenu.hidden = true;
+	}
+
+	async function copySelection() {
+		const text = getSelectedText();
+		if (!text) return;
+
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch (error) {
+			const textArea = document.createElement("textarea");
+			textArea.value = text;
+			textArea.style.position = "fixed";
+			textArea.style.opacity = "0";
+			document.body.appendChild(textArea);
+			textArea.select();
+			const copied = document.execCommand("copy");
+			textArea.remove();
+			if (!copied) {
+				console.error("Failed to copy selected PDF text:", error);
+				return;
+			}
+		}
+		hideContextMenu();
+	}
+
+	function selectAllText() {
+		const selection = window.getSelection();
+		if (!selection) return;
+		selection.removeAllRanges();
+		const range = document.createRange();
+		range.selectNodeContents(pagesContainer);
+		selection.addRange(range);
+		hideContextMenu();
+	}
+
+	function searchSelection() {
+		const text = getSelectedText();
+		if (!text) return;
+		searchBar.classList.remove("hidden");
+		searchInput.value = text;
+		searchInput.focus();
+		searchInput.select();
+		runSearch();
+		hideContextMenu();
 	}
 
 	/** Invert the viewport transform to get PDF coordinates from pixel coords. */
@@ -412,6 +494,7 @@
 			textDiv.style.width = cssW + "px";
 			textDiv.style.height = cssH + "px";
 			textDiv.style.setProperty("--scale-factor", effectiveZoom);
+			textDiv.style.setProperty("--total-scale-factor", effectiveZoom);
 
 			const textLayer = new pdfjsLib.TextLayer({
 				textContentSource: textContent,
