@@ -547,10 +547,13 @@
 
 			if (annot.url) {
 				// External URL
-				el.href = annot.url;
+				// Keep the webview from navigating directly; the extension host
+				// handles the URL so VS Code can show its confirmation prompt.
+				el.href = "#";
 				el.title = annot.url;
 				el.addEventListener("click", (e) => {
 					e.preventDefault();
+					e.stopPropagation();
 					vscode.postMessage({ type: "openExternal", url: annot.url });
 				});
 			} else if (annot.dest) {
